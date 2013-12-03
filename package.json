@@ -1,0 +1,28 @@
+{
+  "name": "barrels",
+  "version": "0.0.1",
+  "description": "Simple DB Fixtures for Sails.js",
+  "dependencies": {
+    "sails": "0.9.7",
+    "async": "0.2.9"
+  },
+  "devDependencies": {
+    "mocha": "1.14.0",
+    "supervisor": "0.5.6"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test mocha",
+    "autotest": "./node_modules/.bin/supervisor -i .tmp -q -n exit -x ./node_modules/.bin/mocha -- -R spec -G -b"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bredikhin/barrels.git"
+  },
+  "author": "Ruslan Bredikhin",
+  "license":
+  {
+    "type": "MIT",
+    "url": "http://www.opensource.org/licenses/MIT"
+  }
+}
