@@ -48,26 +48,31 @@ module.exports = {
       this.load(folder);
 
     /**
-     * Synchronously iterate through the models
+     * Iterate through the models
      */
-    async.each(Object.keys(data), function(modelName, cb) {
+    async.each(Object.keys(data), function(modelName, nextModel) {
       var Model = sails.models[modelName];
-
-      /**
-       * Collection cleanup
-       */
-      Model.destroy(function(err) {
+      if (Model) {
         /**
-         * Synchronously iterate through the objects
+         * Collection cleanup
          */
-        async.each(data[modelName], function(item, cb) {
-          if (err) return done(err);
-          Model.create(item, function(err) {
-            if (err) return done(err);
-            cb();
-          });
-        }, cb);
-      });
+        Model.destroy(function(err) {
+          /**
+           * Iterate through the objects
+           */
+          async.each(data[modelName], function(item, nextObject) {
+            if (err)
+              return done(err);
+            Model.create(item, function(err) {
+              if (err)
+                return done(err);
+              nextObject();
+            });
+          }, nextModel);
+        });
+      }
+      else
+        nextModel();
     }, done);
 
     return this;
