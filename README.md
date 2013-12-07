@@ -2,9 +2,11 @@
 
 ## Installation
 
-  `$ npm install barrels`
+`$ npm install barrels`
+
 or add the module to your `package.json` and run
-  `$ npm install`
+
+`$ npm install`
 
 ## Usage
 
