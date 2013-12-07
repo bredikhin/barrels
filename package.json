@@ -1,6 +1,6 @@
 {
   "name": "barrels",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Simple DB Fixtures for Sails.js",
   "dependencies": {
     "sails": "~0.9.7",
@@ -13,7 +13,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test mocha",
+    "test": "NODE_ENV=test mocha -R spec",
     "autotest": "./node_modules/.bin/supervisor -i .tmp -q -n exit -x ./node_modules/.bin/mocha -- -R spec -G -b"
   },
   "repository": {
