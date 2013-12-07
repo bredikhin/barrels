@@ -2,18 +2,19 @@
 
 ## Installation
 
-  $ npm install barrels
+  `$ npm install barrels`
 or add the module to your `package.json` and run
-  $ npm install
+  `$ npm install`
 
 ## Usage
 
 Once your [Sails.js](http://sailsjs.org/) server is started:
 
     var barrels = require('barrels');
-    var fixtures = barrels.load().populate(function(err) {
+    var fixtures = barrels.load().objects;
+    barrels.populate(function(err) {
       ...
-    }).objects;
+    });
 
 After `load` the fixture data will be accessible via the `objects` property.
 
@@ -31,4 +32,4 @@ After `load` the fixture data will be accessible via the `objects` property.
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2013 Ruslan Bredikhin ([http://ruslanbredikhin.com/](http://ruslanbredikhin.com/))
+Copyright (c) 2013 [Ruslan Bredikhin](http://ruslanbredikhin.com/)
