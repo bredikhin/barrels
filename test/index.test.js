@@ -39,7 +39,6 @@ describe('Barrels', function() {
     });
 
     after(function(done) {
-      console.log();
       sails.lower(done);
     });
 

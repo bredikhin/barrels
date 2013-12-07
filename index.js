@@ -74,7 +74,5 @@ module.exports = {
       else
         nextModel();
     }, done);
-
-    return this;
   }
 }
