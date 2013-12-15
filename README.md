@@ -10,6 +10,8 @@ or add the module to your `package.json` and run
 
 ## Usage
 
+Drop your fixtures in `test/fixtures` as JSON files named after your models.
+
 Once your [Sails.js](http://sailsjs.org/) server is started:
 
     var barrels = require('barrels');
