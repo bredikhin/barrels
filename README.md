@@ -1,6 +1,8 @@
 # Simple DB Fixtures for Sails.js
 
 [![Build Status](https://travis-ci.org/bredikhin/barrels.png?branch=master)](https://travis-ci.org/bredikhin/barrels)
+[![Dependency Status](https://gemnasium.com/bredikhin/barrels.png)](https://gemnasium.com/bredikhin/barrels)
+
 
 ## Installation
 
