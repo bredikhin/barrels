@@ -1,5 +1,7 @@
 # Simple DB Fixtures for Sails.js
 
+[![Build Status](https://travis-ci.org/bredikhin/barrels.png?branch=master)](https://travis-ci.org/bredikhin/barrels)
+
 ## Installation
 
 `$ npm install barrels`
