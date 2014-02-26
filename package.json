@@ -4,7 +4,8 @@
   "description": "Simple DB Fixtures for Sails.js",
   "dependencies": {
     "sails": "~0.9.9",
-    "async": "~0.2.9"
+    "async": "~0.2.9",
+    "sails-memory": "~0.9.1"
   },
   "devDependencies": {
     "mocha": "~1.17.1",
