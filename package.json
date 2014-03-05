@@ -1,6 +1,6 @@
 {
   "name": "barrels",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Simple DB Fixtures for Sails.js",
   "dependencies": {
     "sails": "~0.9.9",
@@ -22,6 +22,16 @@
     "url": "git://github.com/bredikhin/barrels.git"
   },
   "author": "Ruslan Bredikhin",
+  "contributors": [
+    {
+      "name": "Ruslan Bredikhin",
+      "email": "ruslan.bredikhin@facebook.com"
+    },
+    {
+      "name": "Mikael Møller",
+      "email": "mikael@i-dyllen.dk"
+    }
+  ],
   "license": {
     "type": "MIT",
     "url": "http://www.opensource.org/licenses/MIT"
