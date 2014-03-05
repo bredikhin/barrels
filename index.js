@@ -18,7 +18,7 @@ module.exports = {
    *
    * @param {String} folder
    * @chainable
-   */  
+   */
   load: function(folder) {
     /**
      * Looking in '<project_root>/test/fixtures' by default
@@ -26,7 +26,8 @@ module.exports = {
     if (!folder)
       folder = process.cwd() + '/test/fixtures';
     var files = fs.readdirSync(folder);
-    for (i in files) {
+    var i;
+    for (i = 0; i < files.length; i++) {
       if (path.extname(files[i]).toLowerCase() === '.json')
       {
         var modelName = path.basename(files[i]).split('.')[0].toLowerCase();
@@ -38,7 +39,7 @@ module.exports = {
   },
 
   /**
-   * 
+   *
    * @param {function} done
    * @param {String} folder
    * @chainable
