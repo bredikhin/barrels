@@ -33,7 +33,6 @@ After `load` the fixture data will be accessible via the `objects` property.
 
 ## Dependencies
 
-* [Sails.js](http://sailsjs.org/)
 * [Async.js](https://github.com/caolan/async)
 
 ## License
