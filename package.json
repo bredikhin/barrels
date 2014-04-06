@@ -3,7 +3,7 @@
   "version": "0.0.3",
   "description": "Simple DB Fixtures for Sails.js",
   "dependencies": {
-    "async": "~0.4.0"
+    "async": "~0.6.2"
   },
   "devDependencies": {
     "mocha": "~1.18.0",
