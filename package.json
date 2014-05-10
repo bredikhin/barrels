@@ -7,7 +7,7 @@
   },
   "devDependencies": {
     "mocha": "^1.18.2",
-    "supervisor": "^0.5.7",
+    "supervisor": "^0.6.0",
     "sails-memory": "^0.9.1",
     "sails": "^0.9.16"
   },
