@@ -3,13 +3,13 @@
   "version": "0.0.3",
   "description": "Simple DB Fixtures for Sails.js",
   "dependencies": {
-    "async": "^0.8.0"
+    "async": "^0.9.0"
   },
   "devDependencies": {
     "mocha": "^1.18.2",
-    "supervisor": "^0.6.0",
+    "sails": "^0.9.16",
     "sails-memory": "^0.9.1",
-    "sails": "^0.9.16"
+    "supervisor": "^0.6.0"
   },
   "main": "index.js",
   "scripts": {
