@@ -1,6 +1,6 @@
 {
   "name": "barrels",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Simple DB Fixtures for Sails.js",
   "dependencies": {
     "async": "^0.9.0"
