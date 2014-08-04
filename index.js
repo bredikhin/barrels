@@ -87,9 +87,9 @@ module.exports = {
       // validate that fixtures has been loaded into data
       if (Object.keys(data).length > 0) {
         doPopulateSails(done);
-      } else {
-        done(new Error("No fixtures loaded"));
       }
+      else
+        done();
     }
   }
 };
