@@ -8,6 +8,7 @@
 var fs = require('fs')
   , path = require('path')
   , async = require('async')
+  , _ = require('lodash')
   , data = {};
 
 /**
@@ -28,7 +29,7 @@ function doPopulateSails(done) {
       Model.destroy({}, function(err) {
 
         // Insert all items from the fixture in the model (in parallel using async)
-        async.each(data[modelName], function(item, nextItem) {
+        async.each(_.cloneDeep(data[modelName]), function(item, nextItem) {
           if (err) {
             return done(err);
           }
