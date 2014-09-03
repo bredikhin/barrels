@@ -1,4 +1,4 @@
-# Simple DB Fixtures for Sails.js
+# Simple DB Fixtures for Sails.js (^0.10.x)
 
 [![Build Status](https://travis-ci.org/bredikhin/barrels.png?branch=master)](https://travis-ci.org/bredikhin/barrels)
 [![Dependency Status](https://gemnasium.com/bredikhin/barrels.png)](https://gemnasium.com/bredikhin/barrels)
@@ -6,11 +6,7 @@
 
 ## Installation
 
-`$ npm install barrels`
-
-or add the module to your `package.json` and run
-
-`$ npm install`
+`$ npm i --save-dev barrels`
 
 ## Usage
 
@@ -34,9 +30,10 @@ After `load` the fixture data will be accessible via the `objects` property.
 ## Dependencies
 
 * [Async.js](https://github.com/caolan/async)
+* [Lo-Dash](http://lodash.com/)
 
 ## License
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2013 [Ruslan Bredikhin](http://ruslanbredikhin.com/)
+Copyright (c) 2013-2014 [Ruslan Bredikhin](http://ruslanbredikhin.com/)
