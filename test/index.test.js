@@ -1,12 +1,13 @@
-var assert = require('assert')
-  , barrels = require('../')
-  , Sails = require('sails');
+var assert = require('assert');
+var Barrels = require('../');
+var barrels = new Barrels();
+var Sails = require('sails');
 
 describe('Barrels', function() {
-  var fixtures = barrels.load().objects;
+  var fixtures = barrels.data;
 
   // Load fixtures into memory
-  describe('#load()', function() {
+  describe('constructor', function() {
     it ("should load all the json files from default folder", function() {
       assert((Object.keys(fixtures).length >= 2), 'At least two fixture files should be loaded!');
     });
@@ -18,7 +19,7 @@ describe('Barrels', function() {
   });
 
   // Populate DB with fixtures
-  describe('#populate()', function() {
+  describe('populate()', function() {
     before(function(done) {
       Sails.lift({
         log: {
@@ -37,7 +38,7 @@ describe('Barrels', function() {
           migrate: 'drop'
         },
         hooks: {
-          "grunt": false
+          grunt: false
         }
       }, function(err, sails) {
         done(err);
@@ -52,9 +53,11 @@ describe('Barrels', function() {
       barrels.populate(function(err) {
         if (err)
           return done(err);
+
         Apples.find(function(err, apples) {
           if (err)
             return done(err);
+
           var gotApples = (fixtures['apples'].length > 0);
           var applesAreInTheDb = (apples.length === fixtures['apples'].length);
           assert(gotApples&&applesAreInTheDb, 'There must be something!');
@@ -69,5 +72,5 @@ describe('Barrels', function() {
         });
       });
     });
-  }); 
+  });
 });
