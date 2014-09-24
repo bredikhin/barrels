@@ -46,7 +46,7 @@ Barrels.prototype.beforePopulate = function(done) {
 }
 
 /**
- * Assotiate
+ * Assoсiate
  * @param {function} done callback
  */
 Barrels.prototype.afterPopulate = function(done) {
