@@ -37,30 +37,57 @@ function Barrels(sourceFolder) {
   }
 }
 
+/**
+ * Extract assotiations before putting the loaded fixtures in the database
+ * @param {function} done callback
+ */
+Barrels.prototype.beforePopulate = function(done) {
+  done();
+}
+
+/**
+ * Assotiate
+ * @param {function} done callback
+ */
+Barrels.prototype.afterPopulate = function(done) {
+  done();
+}
+
+/**
+ * Put loaded fixtures in the database
+ * @param {function} done callback
+ */
 Barrels.prototype.populate = function(done) {
-  var modelNames = Object.keys(this.data);
   var that = this;
 
-  // Populate each table / collection
-  async.each(modelNames, function(modelName, nextModel) {
-    var Model = sails.models[modelName];
-    if (Model) {
-      //Cleanup existing data in the model
-      Model.destroy({}, function(err) {
-        // Insert all items from the fixture in the model
-        var fixtureObjects = _.cloneDeep(that.data[modelName]);
-        async.each(fixtureObjects, function(item, nextItem) {
-          if (err)
-            return done(err);
-          Model.create(item, function(err) {
+  this.beforePopulate(function(err) {
+    var modelNames = Object.keys(that.data);
+
+    // Populate each table / collection
+    async.each(modelNames, function(modelName, nextModel) {
+      var Model = sails.models[modelName];
+      if (Model) {
+        //Cleanup existing data in the model
+        Model.destroy({}, function(err) {
+          // Insert all items from the fixture in the model
+          var fixtureObjects = _.cloneDeep(that.data[modelName]);
+          async.each(fixtureObjects, function(item, nextItem) {
             if (err)
               return done(err);
-            nextItem();
-          });
-        }, nextModel);
-      });
-    } else {
-      nextModel();
-    }
-  }, done);
+            Model.create(item, function(err) {
+              if (err)
+                return done(err);
+              nextItem();
+            });
+          }, nextModel);
+        });
+      } else {
+        nextModel();
+      }
+    }, function(err) {
+      if (err)
+        return done(err);
+      that.afterPopulate(done);
+    });
+  });
 }
