@@ -49,24 +49,24 @@ describe('Barrels', function() {
       sails.lower(done);
     });
 
-    it ('should populate the DB with apples and oranges', function(done) {
+    it ('should populate the DB with products and categories', function(done) {
       barrels.populate(function(err) {
         if (err)
           return done(err);
 
-        Apples.find(function(err, apples) {
+        Categories.find(function(err, categories) {
           if (err)
             return done(err);
 
-          var gotApples = (fixtures['apples'].length > 0);
-          var applesAreInTheDb = (apples.length === fixtures['apples'].length);
-          assert(gotApples&&applesAreInTheDb, 'There must be something!');
+          var gotCategories = (fixtures['categories'].length > 0);
+          var categoriesAreInTheDb = (categories.length === fixtures['categories'].length);
+          assert(gotCategories&&categoriesAreInTheDb, 'There must be something!');
 
-          Oranges.find(function(err, oranges) {
+          Products.find(function(err, products) {
             if (err)
               return done(err);
-            assert.equal(apples.length, oranges.length,
-              'Apples and oranges should have equal amount of varieties!');
+            assert.equal(categories.length, products.length,
+              'Categories and products should have equal amount of entries!');
             done();
           });
         });
