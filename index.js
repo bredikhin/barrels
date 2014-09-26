@@ -38,14 +38,6 @@ function Barrels(sourceFolder) {
 }
 
 /**
- * Extract assotiations before putting the loaded fixtures in the database
- * @param {function} done callback
- */
-Barrels.prototype.beforePopulate = function(done) {
-  done();
-}
-
-/**
  * Assoсiate
  * @param {function} done callback
  */
@@ -54,40 +46,47 @@ Barrels.prototype.afterPopulate = function(done) {
 }
 
 /**
- * Put loaded fixtures in the database
+ * Put loaded fixtures in the database, associations excluded
  * @param {function} done callback
  */
 Barrels.prototype.populate = function(done) {
   var that = this;
+  var modelNames = Object.keys(this.data);
 
-  this.beforePopulate(function(err) {
-    var modelNames = Object.keys(that.data);
+  // Populate each table / collection
+  async.each(modelNames, function(modelName, nextModel) {
+    var Model = sails.models[modelName];
+    if (Model) {
+      //Cleanup existing data in the model
+      Model.destroy({}, function(err) {
+        var associations = [];
+        for (var i = 0; i < Model.associations.length; i++) {
+          associations.push(Model.associations[i].alias);
+        }
 
-    // Populate each table / collection
-    async.each(modelNames, function(modelName, nextModel) {
-      var Model = sails.models[modelName];
-      if (Model) {
-        //Cleanup existing data in the model
-        Model.destroy({}, function(err) {
-          // Insert all items from the fixture in the model
-          var fixtureObjects = _.cloneDeep(that.data[modelName]);
-          async.each(fixtureObjects, function(item, nextItem) {
+        // Insert all items from the fixture in the model
+        var fixtureObjects = _.cloneDeep(that.data[modelName]);
+        async.each(fixtureObjects, function(item, nextItem) {
+          if (err)
+            return done(err);
+
+          // Strip associations data
+          item = _.omit(item, associations);
+
+          // Insert
+          Model.create(item, function(err) {
             if (err)
               return done(err);
-            Model.create(item, function(err) {
-              if (err)
-                return done(err);
-              nextItem();
-            });
-          }, nextModel);
-        });
-      } else {
-        nextModel();
-      }
-    }, function(err) {
-      if (err)
-        return done(err);
-      that.afterPopulate(done);
-    });
+            nextItem();
+          });
+        }, nextModel);
+      });
+    } else {
+      nextModel();
+    }
+  }, function(err) {
+    if (err)
+      return done(err);
+    that.afterPopulate(done);
   });
 }
