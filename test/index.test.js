@@ -1,4 +1,4 @@
-var assert = require('assert');
+var should = require('should');
 var Barrels = require('../');
 var barrels = new Barrels();
 var Sails = require('sails');
@@ -8,13 +8,13 @@ describe('Barrels', function() {
 
   // Load fixtures into memory
   describe('constructor', function() {
-    it ("should load all the json files from default folder", function() {
-      assert((Object.keys(fixtures).length >= 2), 'At least two fixture files should be loaded!');
+    it ('should load all the json files from default folder', function() {
+      Object.keys(fixtures).length.should.be.greaterThan(1, 'At least two fixture files should be loaded!');
     });
 
-    it ("should set generate lowercase property names for models", function() {
+    it ('should set generate lowercase property names for models', function() {
       var oneWord = Object.keys(fixtures).join();
-      assert.equal(oneWord, oneWord.toLowerCase(), 'Property names should be in lowercase!');
+      oneWord.toLowerCase().should.be.eql(oneWord, 'Property names should be in lowercase!');
     });
   });
 
@@ -30,7 +30,9 @@ describe('Barrels', function() {
         },
         connections: {
           test: {
-            adapter: 'sails-memory'
+            adapter: 'sails-mongo',
+            host: 'localhost',
+            port: 27017,
           }
         },
         models: {
@@ -41,7 +43,10 @@ describe('Barrels', function() {
           grunt: false
         }
       }, function(err, sails) {
-        done(err);
+        if (err)
+          return done(err);
+
+        barrels.populate(done);
       });
     });
 
@@ -50,26 +55,48 @@ describe('Barrels', function() {
     });
 
     it ('should populate the DB with products and categories', function(done) {
-      barrels.populate(function(err) {
+      Categories.find().exec(function(err, categories) {
         if (err)
           return done(err);
 
-        Categories.find(function(err, categories) {
+        var gotCategories = (fixtures['categories'].length > 0);
+        var categoriesAreInTheDb = (categories.length === fixtures['categories'].length);
+        should(gotCategories&&categoriesAreInTheDb).be.ok;
+
+        Products.find().exec(function(err, products) {
           if (err)
             return done(err);
 
-          var gotCategories = (fixtures['categories'].length > 0);
-          var categoriesAreInTheDb = (categories.length === fixtures['categories'].length);
-          assert(gotCategories&&categoriesAreInTheDb, 'There must be something!');
-
-          Products.find(function(err, products) {
-            if (err)
-              return done(err);
-            assert.equal(categories.length, products.length,
-              'Categories and products should have equal amount of entries!');
-            done();
-          });
+          categories.length.should.be.eql(products.length,
+            'Categories and products should have equal amount of entries!');
+          done();
         });
+      });
+    });
+
+    it ('should assign a category to each product', function(done) {
+      Products.find().populate('category').exec(function(err, products) {
+        if (err)
+          return done(err);
+
+        async.each(products, function(product, nextProduct) {
+          should(product.category.name).not.be.empty;
+
+          nextProduct();
+        }, done);
+      });
+    });
+
+    it ('should assign at least two tags to each product', function(done) {
+      Products.find().populate('tags').exec(function(err, products) {
+        if (err)
+          return done(err);
+
+        async.each(products, function(product, nextProduct) {
+          should(product.tags.length).be.greaterThan(1);
+
+          nextProduct();
+        }, done);
       });
     });
   });
