@@ -30,9 +30,7 @@ describe('Barrels', function() {
         },
         connections: {
           test: {
-            adapter: 'sails-mongo',
-            host: 'localhost',
-            port: 27017,
+            adapter: 'sails-memory'
           }
         },
         models: {
