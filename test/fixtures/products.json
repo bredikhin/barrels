@@ -1,0 +1,27 @@
+[
+  {
+    "title": "Leather Jacket",
+    "category": 1,
+    "tags": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "title": "Driving Shoes",
+    "category": 2,
+    "tags": [
+      2,
+      3
+    ]
+  },
+  {
+    "title": "Aviator Sunglasses",
+    "category": 3,
+    "tags": [
+      3,
+      4
+    ]
+  }
+]

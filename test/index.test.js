@@ -1,4 +1,4 @@
-var assert = require('assert');
+var should = require('should');
 var Barrels = require('../');
 var barrels = new Barrels();
 var Sails = require('sails');
@@ -8,13 +8,13 @@ describe('Barrels', function() {
 
   // Load fixtures into memory
   describe('constructor', function() {
-    it ("should load all the json files from default folder", function() {
-      assert((Object.keys(fixtures).length >= 2), 'At least two fixture files should be loaded!');
+    it ('should load all the json files from default folder', function() {
+      Object.keys(fixtures).length.should.be.greaterThan(1, 'At least two fixture files should be loaded!');
     });
 
-    it ("should set generate lowercase property names for models", function() {
+    it ('should set generate lowercase property names for models', function() {
       var oneWord = Object.keys(fixtures).join();
-      assert.equal(oneWord, oneWord.toLowerCase(), 'Property names should be in lowercase!');
+      oneWord.toLowerCase().should.be.eql(oneWord, 'Property names should be in lowercase!');
     });
   });
 
@@ -41,7 +41,10 @@ describe('Barrels', function() {
           grunt: false
         }
       }, function(err, sails) {
-        done(err);
+        if (err)
+          return done(err);
+
+        barrels.populate(done);
       });
     });
 
@@ -49,27 +52,49 @@ describe('Barrels', function() {
       sails.lower(done);
     });
 
-    it ('should populate the DB with apples and oranges', function(done) {
-      barrels.populate(function(err) {
+    it ('should populate the DB with products and categories', function(done) {
+      Categories.find().exec(function(err, categories) {
         if (err)
           return done(err);
 
-        Apples.find(function(err, apples) {
+        var gotCategories = (fixtures['categories'].length > 0);
+        var categoriesAreInTheDb = (categories.length === fixtures['categories'].length);
+        should(gotCategories&&categoriesAreInTheDb).be.ok;
+
+        Products.find().exec(function(err, products) {
           if (err)
             return done(err);
 
-          var gotApples = (fixtures['apples'].length > 0);
-          var applesAreInTheDb = (apples.length === fixtures['apples'].length);
-          assert(gotApples&&applesAreInTheDb, 'There must be something!');
-
-          Oranges.find(function(err, oranges) {
-            if (err)
-              return done(err);
-            assert.equal(apples.length, oranges.length,
-              'Apples and oranges should have equal amount of varieties!');
-            done();
-          });
+          categories.length.should.be.eql(products.length,
+            'Categories and products should have equal amount of entries!');
+          done();
         });
+      });
+    });
+
+    it ('should assign a category to each product', function(done) {
+      Products.find().populate('category').exec(function(err, products) {
+        if (err)
+          return done(err);
+
+        async.each(products, function(product, nextProduct) {
+          should(product.category.name).not.be.empty;
+
+          nextProduct();
+        }, done);
+      });
+    });
+
+    it ('should assign at least two tags to each product', function(done) {
+      Products.find().populate('tags').exec(function(err, products) {
+        if (err)
+          return done(err);
+
+        async.each(products, function(product, nextProduct) {
+          should(product.tags.length).be.greaterThan(1);
+
+          nextProduct();
+        }, done);
       });
     });
   });

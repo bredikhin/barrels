@@ -21,12 +21,20 @@ Once your [Sails.js](http://sailsjs.org/) server is started:
       ...
     });
 
-Pass to the constructor the path to the folder containing your fixtures (defaults to `./test/fixtures`).
+Pass to the constructor the path to the folder containing your fixtures
+(defaults to `./test/fixtures`).
 
 `Populate`'ing the test database involves two steps:
 
 * Removing any existing data from the collection corresponding to the fixture
 * Loading the fixture data into the test database
+
+## Associations
+
+Use the number of position (starting from one) of an entry in the JSON fixture
+as a reference to associate models (see
+https://github.com/bredikhin/barrels/blob/master/test/fixtures/products.json
+for example).
 
 ## Dependencies
 

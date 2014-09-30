@@ -10,7 +10,8 @@
     "mocha": "^1.20.3",
     "pre-commit": "0.0.7",
     "sails": "^0.10.3",
-    "sails-memory": "^0.10.2"
+    "sails-memory": "^0.10.2",
+    "should": "^4.0.4"
   },
   "main": "index.js",
   "scripts": {
