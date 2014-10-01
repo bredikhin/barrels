@@ -5,7 +5,7 @@
  */
 
 /**
- * Module dependencies
+ * Dependencies
  */
 var fs = require('fs');
 var path = require('path');
@@ -68,10 +68,12 @@ Barrels.prototype.associate = function(done) {
           if (err)
             return done(err);
 
+          // Pick associations only
           item = _.pick(item, Object.keys(that.associations[modelName]));
           async.each(Object.keys(item), function(attr, nextAttr) {
             var association = that.associations[modelName][attr];
             var joined = association[association.type];
+
             if (!_.isArray(item[attr]))
               model[attr] = that.idMap[joined][item[attr]-1];
             else {
@@ -108,17 +110,18 @@ Barrels.prototype.populate = function(done) {
   async.each(that.modelNames, function(modelName, nextModel) {
     var Model = sails.models[modelName];
     if (Model) {
-      // Cleanup existing data in the model
+      // Cleanup existing data in the table / collection
       Model.destroy().exec(function(err) {
         if (err)
           return done(err);
 
+        // Save model's association information
         that.associations[modelName] = {};
         for (var i = 0; i < Model.associations.length; i++) {
           that.associations[modelName][Model.associations[i].alias] = Model.associations[i];
         }
 
-        // Insert all items from the fixture in the model
+        // Insert all the fixture items
         that.idMap[modelName] = [];
         var fixtureObjects = _.cloneDeep(that.data[modelName]);
         async.each(fixtureObjects, function(item, nextItem) {
@@ -136,7 +139,9 @@ Barrels.prototype.populate = function(done) {
             if (err)
               return done(err);
 
+            // ID mapping
             that.idMap[modelName][itemIndex] = model.id;
+
             nextItem();
           });
         }, nextModel);
@@ -148,6 +153,7 @@ Barrels.prototype.populate = function(done) {
     if (err)
       return done(err);
 
+    // Create associations
     that.associate(done);
   });
 }
