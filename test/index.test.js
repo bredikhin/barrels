@@ -1,7 +1,12 @@
+'use strict';
+
+/**
+ * Dependencies
+ */
 var should = require('should');
+var Sails = require('sails');
 var Barrels = require('../');
 var barrels = new Barrels();
-var Sails = require('sails');
 
 describe('Barrels', function() {
   var fixtures = barrels.data;
