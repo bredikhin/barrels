@@ -66,7 +66,7 @@ Barrels.prototype.associate = function(done) {
         // Find and associate
         Model.findOne(that.idMap[modelName][itemIndex]).exec(function(err, model) {
           if (err)
-            return done(err);
+            return nextItem(err);
 
           // Pick associations only
           item = _.pick(item, Object.keys(that.associations[modelName]));
@@ -84,7 +84,7 @@ Barrels.prototype.associate = function(done) {
 
             model.save(function(err) {
               if (err)
-                return done(err);
+                return nextAttr(err);
 
               nextAttr();
             });
@@ -94,16 +94,16 @@ Barrels.prototype.associate = function(done) {
     } else {
       nextModel();
     }
-  }, function(err) {
-    done(err);
-  });
+  }, done);
 }
 
 /**
  * Put loaded fixtures in the database, associations excluded
  * @param {function} done callback
+ * @param {boolean} autoAssociations automatically associate based on the order in the fixture files
  */
-Barrels.prototype.populate = function(done) {
+Barrels.prototype.populate = function(done, autoAssociations) {
+  autoAssociations = !(autoAssociations === false);
   var that = this;
 
   // Populate each table / collection
@@ -113,7 +113,7 @@ Barrels.prototype.populate = function(done) {
       // Cleanup existing data in the table / collection
       Model.destroy().exec(function(err) {
         if (err)
-          return done(err);
+          return nextModel(err);
 
         // Save model's association information
         that.associations[modelName] = {};
@@ -125,19 +125,18 @@ Barrels.prototype.populate = function(done) {
         that.idMap[modelName] = [];
         var fixtureObjects = _.cloneDeep(that.data[modelName]);
         async.each(fixtureObjects, function(item, nextItem) {
-          if (err)
-            return done(err);
-
           // Item position in the file
           var itemIndex = fixtureObjects.indexOf(item);
 
           // Strip associations data
-          item = _.omit(item, Object.keys(that.associations[modelName]));
+          if (autoAssociations) {
+            item = _.omit(item, Object.keys(that.associations[modelName]));
+          }
 
           // Insert
           Model.create(item).exec(function(err, model) {
             if (err)
-              return done(err);
+              return nextItem(err);
 
             // ID mapping
             that.idMap[modelName][itemIndex] = model.id;
@@ -153,7 +152,10 @@ Barrels.prototype.populate = function(done) {
     if (err)
       return done(err);
 
-    // Create associations
-    that.associate(done);
+    // Create associations if requested
+    if (autoAssociations)
+      return that.associate(done);
+
+    done();
   });
 }
