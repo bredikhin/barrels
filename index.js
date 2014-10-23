@@ -36,8 +36,7 @@ function Barrels(sourceFolder) {
   var files = fs.readdirSync(sourceFolder);
 
   for (var i = 0; i < files.length; i++) {
-    if (path.extname(files[i]).toLowerCase() === '.json')
-    {
+    if (path.extname(files[i]).toLowerCase() === '.json') {
       var modelName = path.basename(files[i]).split('.')[0].toLowerCase();
       this.data[modelName] = require(path.join(sourceFolder, files[i]));
     }
@@ -51,11 +50,15 @@ function Barrels(sourceFolder) {
  * Add associations
  * @param {function} done callback
  */
-Barrels.prototype.associate = function(done) {
+Barrels.prototype.associate = function(collections, done) {
+  if (!_.isArray(collections)) {
+    done = collections;
+    collections = this.modelNames;
+  }
   var that = this;
 
   // Add associations whenever needed
-  async.each(that.modelNames, function(modelName, nextModel) {
+  async.each(collections, function(modelName, nextModel) {
     var Model = sails.models[modelName];
     if (Model) {
       var fixtureObjects = _.cloneDeep(that.data[modelName]);
@@ -99,15 +102,26 @@ Barrels.prototype.associate = function(done) {
 
 /**
  * Put loaded fixtures in the database, associations excluded
+ * @param {array} collections optional list of collections to populate
  * @param {function} done callback
  * @param {boolean} autoAssociations automatically associate based on the order in the fixture files
  */
-Barrels.prototype.populate = function(done, autoAssociations) {
+Barrels.prototype.populate = function(collections, done, autoAssociations) {
+  if (!_.isArray(collections)) {
+    autoAssociations = done;
+    done = collections;
+    collections = this.modelNames;
+  }
+  else {
+    _.each(collections, function(collection) {
+      collection = collection.toLowerCase();
+    });
+  }
   autoAssociations = !(autoAssociations === false);
   var that = this;
 
   // Populate each table / collection
-  async.each(that.modelNames, function(modelName, nextModel) {
+  async.each(collections, function(modelName, nextModel) {
     var Model = sails.models[modelName];
     if (Model) {
       // Cleanup existing data in the table / collection
@@ -154,7 +168,7 @@ Barrels.prototype.populate = function(done, autoAssociations) {
 
     // Create associations if requested
     if (autoAssociations)
-      return that.associate(done);
+      return that.associate(collections, done);
 
     done();
   });
