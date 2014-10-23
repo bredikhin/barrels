@@ -28,7 +28,16 @@ Pass to the constructor the path to the folder containing your fixtures
 
 * Removing any existing data from the collection corresponding to the fixture
 * Loading the fixture data into the test database
-* Automatically applying associations (can be disabled by passing `false` as second parameter to `populate`)
+* Automatically applying associations (can be disabled by passing `false` as
+  the last parameter to `populate`)
+
+`Populate` also accepts an array of names of collections to populate as
+the first (optional) argument, for example:
+
+    barrels.populate(['products'], function(err) {
+      // Only products will be populated
+      ...
+    });
 
 ## Automatic association
 
