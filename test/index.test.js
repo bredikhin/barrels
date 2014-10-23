@@ -86,13 +86,11 @@ describe('Barrels', function() {
       });
 
       it('should assign a category to each product', function(done) {
-        Products.find().populate('category').exec(function(err,
-          products) {
+        Products.find().populate('category').exec(function(err, products) {
           if (err)
             return done(err);
 
-          async.each(products, function(product,
-            nextProduct) {
+          async.each(products, function(product, nextProduct) {
             should(product.category.name).not.be.empty;
 
             nextProduct();
@@ -131,6 +129,40 @@ describe('Barrels', function() {
             nextProduct();
           }, done);
         });
+      });
+    });
+
+    describe('populate(modelList, cb)', function() {
+      before(function(done) {
+        Products.destroy().exec(function(err) {
+          if (err)
+            return done(err);
+            
+          Categories.destroy().exec(function(err) {
+            if (err)
+              return done(err);
+
+            barrels.populate(['products', 'tags'], done);
+          });
+        });
+      });
+
+      it('should populate products but not categories', function(done) {
+        Products.find().exec(function(err, products) {
+          if (err)
+            return done(err);
+
+          products.length.should.be.greaterThan(1);
+        });
+
+        Categories.find().exec(function(err, categories) {
+          if (err)
+            return done(err);
+
+          categories.length.should.be.eql(0);
+        });
+
+        done();
       });
     });
   });
