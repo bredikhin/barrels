@@ -54,7 +54,7 @@ describe('Barrels', function() {
     });
 
     after(function(done) {
-      sails.lower(done);
+      Sails.lower(done);
     });
 
     describe('populate(cb)', function() {
