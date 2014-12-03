@@ -1,3 +1,4 @@
+/*jslint node: true */
 'use strict';
 
 /**
@@ -98,7 +99,7 @@ Barrels.prototype.associate = function(collections, done) {
       nextModel();
     }
   }, done);
-}
+};
 
 /**
  * Put loaded fixtures in the database, associations excluded
@@ -152,8 +153,11 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
             if (err)
               return nextItem(err);
 
-            // ID mapping
-            that.idMap[modelName][itemIndex] = model.id;
+            // Primary key mapping
+            var pkId = _.findKey(Model.definition, function(prop) {
+              return prop.primaryKey === true;
+            });
+            that.idMap[modelName][itemIndex] = model[pkId];
 
             nextItem();
           });
@@ -172,4 +176,4 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
 
     done();
   });
-}
+};
