@@ -5,7 +5,12 @@
 
 module.exports = {
   attributes: {
-  	name: 'string',
+    customId: {
+      type: 'integer',
+      autoIncrement: true,
+      primaryKey: true
+    },
+    name: 'string',
     category: {
       model: 'categories'
     },
