@@ -154,10 +154,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
               return nextItem(err);
 
             // Primary key mapping
-            var pkId = _.findKey(Model.definition, function(prop) {
-              return prop.primaryKey === true;
-            });
-            that.idMap[modelName][itemIndex] = model[pkId];
+            that.idMap[modelName][itemIndex] = model[Model.primaryKey];
 
             nextItem();
           });
