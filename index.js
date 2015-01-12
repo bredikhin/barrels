@@ -19,9 +19,12 @@ module.exports = Barrels;
  * Barrels module
  * @param {string} sourceFolder defaults to <project root>/test/fixtures
  */
-function Barrels(sourceFolder) {
+function Barrels(sourceFolder, models) {
   if (!(this instanceof Barrels))
-    return new Barrels(sourceFolder);
+    return new Barrels(sourceFolder, models);
+
+  // Collections can be provided (in populate is defaulted to sails.models if undefined
+  this.models = models;
 
   // Fixture objects loaded from the JSON files
   this.data = {};
@@ -57,10 +60,13 @@ Barrels.prototype.associate = function(collections, done) {
     collections = this.modelNames;
   }
   var that = this;
+  if(!that.models){
+    that.models = sails.models;
+  }
 
   // Add associations whenever needed
   async.each(collections, function(modelName, nextModel) {
-    var Model = sails.models[modelName];
+    var Model = that.models[modelName];
     if (Model) {
       var fixtureObjects = _.cloneDeep(that.data[modelName]);
       async.each(fixtureObjects, function(item, nextItem) {
@@ -120,10 +126,13 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
   }
   autoAssociations = !(autoAssociations === false);
   var that = this;
+  if(!that.models){
+    that.models = sails.models;
+  }
 
   // Populate each table / collection
   async.each(collections, function(modelName, nextModel) {
-    var Model = sails.models[modelName];
+    var Model = that.models[modelName];
     if (Model) {
       // Cleanup existing data in the table / collection
       Model.destroy().exec(function(err) {
@@ -132,6 +141,11 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
 
         // Save model's association information
         that.associations[modelName] = {};
+
+        //If not using sails, load associations metadata
+        if(!Model.associations){
+          loadAssociations(Model);
+        }
         for (var i = 0; i < Model.associations.length; i++) {
           that.associations[modelName][Model.associations[i].alias] = Model.associations[i];
         }
@@ -174,3 +188,29 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
     done();
   });
 };
+
+// taken from sails, if waterline is used without it
+var loadAssociations = function(model){
+  // Derive information about this model's associations from its schema
+  // and attach/expose the metadata as `SomeModel.associations` (an array)
+  model.associations = _.reduce(model.attributes, function (associatedWith, attrDef, attrName) {
+    if (typeof attrDef === 'object' && (attrDef.model || attrDef.collection)) {
+      var assoc = {
+        alias: attrName,
+        type: attrDef.model ? 'model' : 'collection'
+      };
+      if (attrDef.model) {
+        assoc.model = attrDef.model;
+      }
+      if (attrDef.collection) {
+        assoc.collection = attrDef.collection;
+      }
+      if (attrDef.via) {
+        assoc.via = attrDef.via;
+      }
+
+      associatedWith.push(assoc);
+    }
+    return associatedWith;
+  }, []);
+}
