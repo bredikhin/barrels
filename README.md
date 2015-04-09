@@ -70,7 +70,7 @@ barrels.populate(['user'], function(err) {
 
       // Do your thing...
       done();
-    });
+    }, false);
   });
 ```
 
