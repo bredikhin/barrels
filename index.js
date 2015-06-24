@@ -40,6 +40,10 @@ function Barrels(sourceFolder) {
     if (path.extname(files[i]).toLowerCase() === '.json') {
       var modelName = path.basename(files[i]).split('.')[0].toLowerCase();
       this.data[modelName] = require(path.join(sourceFolder, files[i]));
+    } else if (path.extname(files[i]).toLowerCase() === '.js') {
+      var modelName = path.basename(files[i]).split('.')[0].toLowerCase();
+      var content = fs.readFileSync(path.join(sourceFolder, files[i]), { encoding: 'UTF-8' });
+      this.data[modelName] = eval(content);
     }
   }
 
