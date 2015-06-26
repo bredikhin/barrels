@@ -10,7 +10,7 @@
 
 ## Usage
 
-Drop your fixtures in `test/fixtures` as JSON files named after your models.
+Drop your fixtures in `test/fixtures` as JSON files (or CommonJS modules) named after your models.
 
 Once your [Sails.js](http://sailsjs.org/) server is started:
 
