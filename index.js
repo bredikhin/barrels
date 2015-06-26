@@ -37,7 +37,7 @@ function Barrels(sourceFolder) {
   var files = fs.readdirSync(sourceFolder);
 
   for (var i = 0; i < files.length; i++) {
-    if (path.extname(files[i]).toLowerCase() === '.json') {
+    if (['.json', '.js'].indexOf(path.extname(files[i]).toLowerCase()) !== -1) {
       var modelName = path.basename(files[i]).split('.')[0].toLowerCase();
       this.data[modelName] = require(path.join(sourceFolder, files[i]));
     }
