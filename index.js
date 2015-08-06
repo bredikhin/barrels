@@ -10,8 +10,9 @@
  */
 var fs = require('fs');
 var path = require('path');
-var async = require('async');
+var Promise=require('bluebird');
 var _ = require('lodash');
+var create=require('./create')
 
 module.exports = Barrels;
 
@@ -48,129 +49,118 @@ function Barrels(sourceFolder) {
 }
 
 /**
- * Add associations
- * @param {function} done callback
- */
-Barrels.prototype.associate = function(collections, done) {
-  if (!_.isArray(collections)) {
-    done = collections;
-    collections = this.modelNames;
-  }
-  var that = this;
-
-  // Add associations whenever needed
-  async.each(collections, function(modelName, nextModel) {
-    var Model = sails.models[modelName];
-    if (Model) {
-      var fixtureObjects = _.cloneDeep(that.data[modelName]);
-      async.each(fixtureObjects, function(item, nextItem) {
-        // Item position in the file
-        var itemIndex = fixtureObjects.indexOf(item);
-
-        // Find and associate
-        Model.findOne(that.idMap[modelName][itemIndex]).exec(function(err, model) {
-          if (err)
-            return nextItem(err);
-
-          // Pick associations only
-          item = _.pick(item, Object.keys(that.associations[modelName]));
-          async.each(Object.keys(item), function(attr, nextAttr) {
-            var association = that.associations[modelName][attr];
-            var joined = association[association.type];
-
-            if (!_.isArray(item[attr]))
-              model[attr] = that.idMap[joined][item[attr]-1];
-            else {
-              for (var j = 0; j < item[attr].length; j++) {
-                model[attr].add(that.idMap[joined][item[attr][j]-1]);
-              }
-            }
-
-            model.save(function(err) {
-              if (err)
-                return nextAttr(err);
-
-              nextAttr();
-            });
-          }, nextItem);
-        });
-      }, nextModel);
-    } else {
-      nextModel();
-    }
-  }, done);
-};
-
-/**
  * Put loaded fixtures in the database, associations excluded
  * @param {array} collections optional list of collections to populate
  * @param {function} done callback
- * @param {boolean} autoAssociations automatically associate based on the order in the fixture files
  */
-Barrels.prototype.populate = function(collections, done, autoAssociations) {
+Barrels.prototype.populate = function(collections, done) {
   if (!_.isArray(collections)) {
-    autoAssociations = done;
     done = collections;
     collections = this.modelNames;
-  }
-  else {
+  }else {
     _.each(collections, function(collection) {
       collection = collection.toLowerCase();
     });
   }
-  autoAssociations = !(autoAssociations === false);
-  var that = this;
+  self=this;
+  Promise.resolve(collections)
+  .each(function(modelName){
+    var fixtureObjects = _.cloneDeep(that.data[modelName]);
+    return Promise.resolve(fixtureObjects) 
+    .each(function(fixtureObject){
+      return self.create(modelName,fixtureObject); 
+    });
+  }).catch(function(err){
+    console.error(err); 
+  });
+};
 
-  // Populate each table / collection
-  async.each(collections, function(modelName, nextModel) {
+Barrels.prototype.create=function create(modelName,fixtureObject){
+
+  var self=this;
+
+  return new Promise(function(resolve,reject){
+
     var Model = sails.models[modelName];
     if (Model) {
+
       // Cleanup existing data in the table / collection
       Model.destroy().exec(function(err) {
+
         if (err)
-          return nextModel(err);
+          return reject(err);
 
-        // Save model's association information
-        that.associations[modelName] = {};
+        // get model's association information
+        var associations=[];
         for (var i = 0; i < Model.associations.length; i++) {
-          that.associations[modelName][Model.associations[i].alias] = Model.associations[i];
+          associations.push(Model.associations[i]);
         }
+        fixtureObject=_.deepClone(fixtureObject);
 
-        // Insert all the fixture items
-        that.idMap[modelName] = [];
-        var fixtureObjects = _.cloneDeep(that.data[modelName]);
-        async.each(fixtureObjects, function(item, nextItem) {
-          // Item position in the file
-          var itemIndex = fixtureObjects.indexOf(item);
+        return Promise.resolve(associations)
+        .each(function(association){
 
-          // Strip associations data
-          if (autoAssociations) {
-            item = _.omit(item, Object.keys(that.associations[modelName]));
-          }
+          if(fixtureObject[association.alias]){
 
-          // Insert
-          Model.create(item).exec(function(err, model) {
-            if (err)
-              return nextItem(err);
+            //get or create possible association and get ids
+            return self.findOrCreateAssocations(association,fixtureObject[association.alias])
+            .then(function(docs){
 
-            // Primary key mapping
-            that.idMap[modelName][itemIndex] = model[Model.primaryKey];
+              if(!docs){
+                delete fixtureObject[association.alias];
+                return; 
+              }
 
-            nextItem();
+              if(_.isArray(docs)){
+                fixtureObject[association.alias]=docs.map(function(doc){
+                  return doc.id; 
+                });
+              }else{
+                fixtureObject[association.alias]=docs.id;
+              }
+
+            }); 
+          }           
+
+        })
+        .then(function(){
+          return new Promise(function(resolve,reject){
+            Model.create(fixtureObject).exec(function(err,doc){
+              if(err){
+                reject(err);
+              }else{
+                resolve(doc);
+              }
+            });  
           });
-        }, nextModel);
+        })
+        .catch(function(err){
+          reject(err); 
+        });
       });
-    } else {
-      nextModel();
     }
-  }, function(err) {
-    if (err)
-      return done(err);
+  });
+};
 
-    // Create associations if requested
-    if (autoAssociations)
-      return that.associate(collections, done);
-
-    done();
+Barrels.prototype.findOrCreateAssociations=function(association,query){
+  return new Promise(function(resolve,reject){
+    var Model=sails.models(association.model);
+    if(Model){
+      Model.destroy().exec(function(err) {
+        if (err){
+          reject(err); 
+        }else{
+          Model.findOrCreate(query).exec(function(err,docs){
+            if(err){
+              reject(err);
+            }else{
+              resolve(docs);  
+            }
+          });
+        }
+      }); 
+    }else{
+      reject('model '+association.model+' doesn\'t  exist');
+    }
   });
 };
