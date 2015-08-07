@@ -64,24 +64,18 @@ Barrels.prototype.populate = function(collections, done) {
   }
 
   var self=this;
-
-  var p=Promise.resolve();
-  collections.forEach(function(modelName){
-    p=p.then(function(){
-      return self.destroy(modelName);
-    }).then(function(){
+  Promise.resolve(collections)
+  .each(function(modelName){
+    console.log(modelName);
+    return self.destroy(modelName) 
+    .then(function(){
       var fixtureObjects = _.cloneDeep(self.data[modelName]);
-      var q=Promise.resolve();
-      fixtureObjects.forEach(function(fixtureObject){
-        q=q.then(function(){
-          return self.create(modelName,fixtureObject); 
-        }) 
+      return Promise.resolve(fixtureObjects)
+      .each(function(fixtureObject){
+        return self.create(modelName,fixtureObject); 
       });
-      return q;
     });
-  });
-
-  p.then(function(){
+  }).then(function(){
     done(); 
   }).catch(function(err){
     console.error(err); 
