@@ -66,13 +66,14 @@ Barrels.prototype.populate = function(collections, done) {
   var self=this;
   Promise.resolve(collections)
   .each(function(modelName){
+    var Model=sails.models[modelName];
     console.log(modelName);
-    return self.destroy(modelName) 
+    return self.destroy(Model) 
     .then(function(){
       var fixtureObjects = _.cloneDeep(self.data[modelName]);
       return Promise.resolve(fixtureObjects)
       .each(function(fixtureObject){
-        return self.create(modelName,fixtureObject); 
+        return self.create(Model,fixtureObject); 
       });
     });
   }).then(function(){
@@ -84,9 +85,8 @@ Barrels.prototype.populate = function(collections, done) {
 
 };
 
-Barrels.prototype.destroy=function(modelName){
+Barrels.prototype.destroy=function(Model){
   return new Promise(function(resolve,reject){
-    var Model = sails.models[modelName];
     if (Model) {
       // Cleanup existing data in the table / collection
       Model.destroy().exec(function(err) {
@@ -102,45 +102,16 @@ Barrels.prototype.destroy=function(modelName){
   });
 };
 
-Barrels.prototype.create=function create(modelName,fixtureObject){
+Barrels.prototype.create=function create(Model,fixtureObject){
 
   var self=this;
+  fixtureObject=_.cloneDeep(fixtureObject);
 
-  return new Promise(function(resolve,reject){
-
-    var Model = sails.models[modelName];
-
-    // get model's association information
-    var associations=[];
-    for (var i = 0; i < Model.associations.length; i++) {
-      associations.push(Model.associations[i]);
-    }
-
-    return Promise.resolve(associations)
-    .each(function(association){
-      if(fixtureObject[association.alias]){
-
-        //get or create possible association and get ids
-        return self.findOrCreateAssociations(association,fixtureObject[association.alias])
-        .then(function(docs){
-
-          if(!docs){
-            delete fixtureObject[association.alias];
-            return; 
-          }
-
-          if(_.isArray(docs)){
-            fixtureObject[association.alias]=docs.map(function(doc){
-              return doc.id; 
-            });
-          }else{
-            fixtureObject[association.alias]=docs.id;
-          }
-
-        }); 
-      }           
-    })
-    .then(function(){
+  if(!Model){
+    return Promise.reject('create with undefined model')
+  }else{
+    return self.association(Model,fixtureObject)
+    .then(function(fixtureObject){
       return new Promise(function(resolve,reject){
         Model.create(fixtureObject).exec(function(err,doc){
           if(err){
@@ -150,29 +121,85 @@ Barrels.prototype.create=function create(modelName,fixtureObject){
           }
         });  
       });
-    })
-    .then(function(doc){
-      resolve(doc); 
-    })
-    .catch(function(err){
-      reject(err); 
     });
-  });
+  }
+
 };
 
-Barrels.prototype.findOrCreateAssociations=function(association,query){
-  return new Promise(function(resolve,reject){
-    var Model=sails.models[association.model];
-    if(Model){
-      Model.findOrCreate(query).exec(function(err,docs){
-        if(err){
-          reject(err);
-        }else{
-          resolve(docs);  
-        }
+Barrels.prototype.findOrCreate=function findOrCreate(Model,fixtureObject){
+  var self=this;
+  fixtureObject=_.cloneDeep(fixtureObject);
+
+  if(!Model){
+    return Promise.reject('find or create with undefined model')
+  }else{
+    return self.association(Model,fixtureObject)
+    .then(function(fixtureObject){
+      return new Promise(function(resolve,reject){
+        Model.findOrCreate(fixtureObject,fixtureObject).exec(function(err,docs){
+          if(err){
+            reject(err);
+          }else{
+            resolve(docs);
+          }
+        });  
       });
-    }else{
-      reject('model '+association.model+' doesn\'t  exist');
-    }
-  });
+    });
+  }
+
+};
+
+Barrels.prototype.association=function association(Model,fixtureObject){
+
+  var self=this;
+  if(!Model){
+    return Promise.reject('undefined model')
+  }else{
+
+    return Promise.reduce(Model.associations,function(fixtureObject,association){
+      if(fixtureObject[association.alias]){
+        return self.findOrCreateAssociations(association,fixtureObject[association.alias])
+        .then(function(docs){
+          if(!docs){
+            delete fixtureObject[association.alias];
+            return; 
+          }
+          if(_.isArray(docs)){
+            fixtureObject[association.alias]=docs.map(function(doc){
+              return doc.id; 
+            });
+          }else{
+            fixtureObject[association.alias]=docs.id;
+          }
+          return fixtureObject;
+        }); 
+      }           
+    },fixtureObject)
+    .then(function(fixtureObject){
+      return fixtureObject;
+    });
+  }
+};
+
+Barrels.prototype.findOrCreateAssociations=function(association,fixtureObjects){
+  var Model=null;
+  var records=null;
+  var self=this;
+  if(association.model){
+    Model=sails.models[association.model];
+    return self.findOrCreate(Model,fixtureObjects); 
+  }else{
+    Model=sails.models[association.collection];
+    return Promise.resolve(fixtureObjects)
+    .map(function(record){
+      return self.findOrCreate(Model,record)
+      .then(function(rs){
+        return rs;
+      }); 
+    }).then(function(records){
+      sails.log.info('find create each results');
+      sails.log.info(records);
+      return records;
+    });
+  }
 };
