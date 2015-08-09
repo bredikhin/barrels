@@ -70,6 +70,7 @@ Barrels.prototype.populate = function(collections, done) {
     console.log(modelName);
     return self.destroy(Model) 
     .then(function(){
+      console.log("destroy done");
       var fixtureObjects = _.cloneDeep(self.data[modelName]);
       return Promise.resolve(fixtureObjects)
       .each(function(fixtureObject){
@@ -110,6 +111,7 @@ Barrels.prototype.create=function create(Model,fixtureObject){
   if(!Model){
     return Promise.reject('create with undefined model')
   }else{
+    console.log('starting create model');
     return self.association(Model,fixtureObject)
     .then(function(fixtureObject){
       return new Promise(function(resolve,reject){
@@ -121,6 +123,11 @@ Barrels.prototype.create=function create(Model,fixtureObject){
           }
         });  
       });
+    })
+    .catch(function(err){
+      console.log('create Error:')
+      console.log(err);  
+      throw err;
     });
   }
 
@@ -144,6 +151,11 @@ Barrels.prototype.findOrCreate=function findOrCreate(Model,fixtureObject){
           }
         });  
       });
+    })
+    .catch(function(err){
+      console.log('findOrCreate Error:')
+      console.log(err);  
+      throw err;
     });
   }
 
@@ -155,14 +167,15 @@ Barrels.prototype.association=function association(Model,fixtureObject){
   if(!Model){
     return Promise.reject('undefined model')
   }else{
-
     return Promise.reduce(Model.associations,function(fixtureObject,association){
-      if(fixtureObject[association.alias]){
+      if(fixtureObject && fixtureObject[association.alias]){
+        console.log(fixtureObject[association.alias]);
+        console.log(fixtureObject);
         return self.findOrCreateAssociations(association,fixtureObject[association.alias])
         .then(function(docs){
           if(!docs){
             delete fixtureObject[association.alias];
-            return; 
+            return fixtureObject; 
           }
           if(_.isArray(docs)){
             fixtureObject[association.alias]=docs.map(function(doc){
@@ -173,10 +186,17 @@ Barrels.prototype.association=function association(Model,fixtureObject){
           }
           return fixtureObject;
         }); 
+      }else{
+        return fixtureObject; 
       }           
     },fixtureObject)
     .then(function(fixtureObject){
       return fixtureObject;
+    })
+    .catch(function(err){
+      console.log('association Error:')
+      console.log(err);  
+      throw err;
     });
   }
 };
@@ -187,7 +207,12 @@ Barrels.prototype.findOrCreateAssociations=function(association,fixtureObjects){
   var self=this;
   if(association.model){
     Model=sails.models[association.model];
-    return self.findOrCreate(Model,fixtureObjects); 
+    return self.findOrCreate(Model,fixtureObjects)
+    .catch(function(err){
+      console.log('findOrCreateAssociation Error:')
+      console.log(err);  
+      throw err;
+    });
   }else{
     Model=sails.models[association.collection];
     return Promise.resolve(fixtureObjects)
@@ -200,6 +225,11 @@ Barrels.prototype.findOrCreateAssociations=function(association,fixtureObjects){
       sails.log.info('find create each results');
       sails.log.info(records);
       return records;
+    })
+    .catch(function(err){
+      console.log('findOrCreateAssociation Error:')
+      console.log(err);  
+      throw err;
     });
   }
 };
