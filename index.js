@@ -10,7 +10,7 @@
  */
 var fs = require('fs');
 var path = require('path');
-var async = require('async');
+var Promise=require('bluebird');
 var _ = require('lodash');
 
 module.exports = Barrels;
@@ -48,129 +48,188 @@ function Barrels(sourceFolder) {
 }
 
 /**
- * Add associations
- * @param {function} done callback
- */
-Barrels.prototype.associate = function(collections, done) {
-  if (!_.isArray(collections)) {
-    done = collections;
-    collections = this.modelNames;
-  }
-  var that = this;
-
-  // Add associations whenever needed
-  async.each(collections, function(modelName, nextModel) {
-    var Model = sails.models[modelName];
-    if (Model) {
-      var fixtureObjects = _.cloneDeep(that.data[modelName]);
-      async.each(fixtureObjects, function(item, nextItem) {
-        // Item position in the file
-        var itemIndex = fixtureObjects.indexOf(item);
-
-        // Find and associate
-        Model.findOne(that.idMap[modelName][itemIndex]).exec(function(err, model) {
-          if (err)
-            return nextItem(err);
-
-          // Pick associations only
-          item = _.pick(item, Object.keys(that.associations[modelName]));
-          async.each(Object.keys(item), function(attr, nextAttr) {
-            var association = that.associations[modelName][attr];
-            var joined = association[association.type];
-
-            if (!_.isArray(item[attr]))
-              model[attr] = that.idMap[joined][item[attr]-1];
-            else {
-              for (var j = 0; j < item[attr].length; j++) {
-                model[attr].add(that.idMap[joined][item[attr][j]-1]);
-              }
-            }
-
-            model.save(function(err) {
-              if (err)
-                return nextAttr(err);
-
-              nextAttr();
-            });
-          }, nextItem);
-        });
-      }, nextModel);
-    } else {
-      nextModel();
-    }
-  }, done);
-};
-
-/**
  * Put loaded fixtures in the database, associations excluded
  * @param {array} collections optional list of collections to populate
  * @param {function} done callback
- * @param {boolean} autoAssociations automatically associate based on the order in the fixture files
  */
-Barrels.prototype.populate = function(collections, done, autoAssociations) {
+Barrels.prototype.populate = function(collections, done) {
+
   if (!_.isArray(collections)) {
-    autoAssociations = done;
     done = collections;
     collections = this.modelNames;
-  }
-  else {
+  }else {
     _.each(collections, function(collection) {
       collection = collection.toLowerCase();
     });
   }
-  autoAssociations = !(autoAssociations === false);
-  var that = this;
 
-  // Populate each table / collection
-  async.each(collections, function(modelName, nextModel) {
-    var Model = sails.models[modelName];
+  var self=this;
+  Promise.resolve(collections)
+  .each(function(modelName){
+    var Model=sails.models[modelName];
+    console.log(modelName);
+    return self.destroy(Model) 
+    .then(function(){
+      console.log("destroy done");
+      var fixtureObjects = _.cloneDeep(self.data[modelName]);
+      return Promise.resolve(fixtureObjects)
+      .each(function(fixtureObject){
+        return self.create(Model,fixtureObject); 
+      });
+    });
+  }).then(function(){
+    done(); 
+  }).catch(function(err){
+    console.error(err); 
+    done();
+  });
+
+};
+
+Barrels.prototype.destroy=function(Model){
+  return new Promise(function(resolve,reject){
     if (Model) {
       // Cleanup existing data in the table / collection
       Model.destroy().exec(function(err) {
-        if (err)
-          return nextModel(err);
-
-        // Save model's association information
-        that.associations[modelName] = {};
-        for (var i = 0; i < Model.associations.length; i++) {
-          that.associations[modelName][Model.associations[i].alias] = Model.associations[i];
+        if(err){
+          reject(err); 
+        }else{
+          resolve(); 
         }
-
-        // Insert all the fixture items
-        that.idMap[modelName] = [];
-        var fixtureObjects = _.cloneDeep(that.data[modelName]);
-        async.each(fixtureObjects, function(item, nextItem) {
-          // Item position in the file
-          var itemIndex = fixtureObjects.indexOf(item);
-
-          // Strip associations data
-          if (autoAssociations) {
-            item = _.omit(item, Object.keys(that.associations[modelName]));
-          }
-
-          // Insert
-          Model.create(item).exec(function(err, model) {
-            if (err)
-              return nextItem(err);
-
-            // Primary key mapping
-            that.idMap[modelName][itemIndex] = model[Model.primaryKey];
-
-            nextItem();
-          });
-        }, nextModel);
       });
-    } else {
-      nextModel();
+    }else{
+      reject(modelName+' doesn\'t exist');
     }
-  }, function(err) {
-    if (err)
-      return done(err);
-
-    // Create associations if requested
-    if (autoAssociations)
-      return that.associate(collections, done);
-
-    done();
   });
+};
+
+Barrels.prototype.create=function create(Model,fixtureObject){
+
+  var self=this;
+  fixtureObject=_.cloneDeep(fixtureObject);
+
+  if(!Model){
+    return Promise.reject('create with undefined model')
+  }else{
+    console.log('starting create model');
+    return self.association(Model,fixtureObject)
+    .then(function(fixtureObject){
+      return new Promise(function(resolve,reject){
+        Model.create(fixtureObject).exec(function(err,doc){
+          if(err){
+            reject(err);
+          }else{
+            resolve(doc);
+          }
+        });  
+      });
+    })
+    .catch(function(err){
+      console.log('create Error:')
+      console.log(err);  
+      throw err;
+    });
+  }
+
+};
+
+Barrels.prototype.findOrCreate=function findOrCreate(Model,fixtureObject){
+  var self=this;
+  fixtureObject=_.cloneDeep(fixtureObject);
+
+  if(!Model){
+    return Promise.reject('find or create with undefined model')
+  }else{
+    return self.association(Model,fixtureObject)
+    .then(function(fixtureObject){
+      return new Promise(function(resolve,reject){
+        Model.findOrCreate(fixtureObject,fixtureObject).exec(function(err,docs){
+          if(err){
+            reject(err);
+          }else{
+            resolve(docs);
+          }
+        });  
+      });
+    })
+    .catch(function(err){
+      console.log('findOrCreate Error:')
+      console.log(err);  
+      throw err;
+    });
+  }
+
+};
+
+Barrels.prototype.association=function association(Model,fixtureObject){
+
+  var self=this;
+  if(!Model){
+    return Promise.reject('undefined model')
+  }else{
+    return Promise.reduce(Model.associations,function(fixtureObject,association){
+      if(fixtureObject && fixtureObject[association.alias]){
+        console.log(fixtureObject[association.alias]);
+        console.log(fixtureObject);
+        return self.findOrCreateAssociations(association,fixtureObject[association.alias])
+        .then(function(docs){
+          if(!docs){
+            delete fixtureObject[association.alias];
+            return fixtureObject; 
+          }
+          if(_.isArray(docs)){
+            fixtureObject[association.alias]=docs.map(function(doc){
+              return doc.id; 
+            });
+          }else{
+            fixtureObject[association.alias]=docs.id;
+          }
+          return fixtureObject;
+        }); 
+      }else{
+        return fixtureObject; 
+      }           
+    },fixtureObject)
+    .then(function(fixtureObject){
+      return fixtureObject;
+    })
+    .catch(function(err){
+      console.log('association Error:')
+      console.log(err);  
+      throw err;
+    });
+  }
+};
+
+Barrels.prototype.findOrCreateAssociations=function(association,fixtureObjects){
+  var Model=null;
+  var records=null;
+  var self=this;
+  if(association.model){
+    Model=sails.models[association.model];
+    return self.findOrCreate(Model,fixtureObjects)
+    .catch(function(err){
+      console.log('findOrCreateAssociation Error:')
+      console.log(err);  
+      throw err;
+    });
+  }else{
+    Model=sails.models[association.collection];
+    return Promise.resolve(fixtureObjects)
+    .map(function(record){
+      return self.findOrCreate(Model,record)
+      .then(function(rs){
+        return rs;
+      }); 
+    }).then(function(records){
+      sails.log.info('find create each results');
+      sails.log.info(records);
+      return records;
+    })
+    .catch(function(err){
+      console.log('findOrCreateAssociation Error:')
+      console.log(err);  
+      throw err;
+    });
+  }
 };
