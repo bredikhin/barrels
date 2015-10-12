@@ -18,6 +18,10 @@ module.exports = {
       collection: 'tags',
       via: 'products',
       dominant: true
+    },
+    seller: {
+      model: 'sellers',
+      required: true
     }
   }
 };

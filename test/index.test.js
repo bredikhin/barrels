@@ -29,9 +29,6 @@ describe('Barrels', function() {
   describe('populate()', function() {
     before(function(done) {
       Sails.lift({
-        log: {
-          level: 'error'
-        },
         paths: {
           models: require('path').join(process.cwd(),
             'test/fixtures/models')
@@ -59,7 +56,20 @@ describe('Barrels', function() {
 
     describe('populate(cb)', function() {
       before(function(done) {
-        barrels.populate(done);
+
+          barrels.populate(['sellers'], function() {
+
+              barrels.populate(["categories", "products", "tags"], function () {
+
+                  Products.find()
+                  done();
+
+
+              });
+
+
+          });
+
       });
 
       it('should populate the DB with products and categories', function(done) {
