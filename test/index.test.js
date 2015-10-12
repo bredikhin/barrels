@@ -57,7 +57,7 @@ describe('Barrels', function() {
     describe('populate(cb)', function() {
       before(function(done) {
 
-          barrels.populate(['sellers'], function() {
+          barrels.populate(["sellers", "region"], function() {
 
               barrels.populate(["categories", "products", "tags"], function () {
 
@@ -120,6 +120,19 @@ describe('Barrels', function() {
           }, done);
         });
       });
+
+      it.only('should assign at least three regions to each product', function(done) {
+        Products.find().populate('regions').exec(function(err, products) {
+          if (err)
+            return done(err);
+
+          async.each(products, function(product, nextProduct) {
+            should(product.regions.length).be.greaterThan(2);
+
+            nextProduct();
+          }, done);
+        })
+      })
     });
 
     describe('populate(cb, false)', function() {

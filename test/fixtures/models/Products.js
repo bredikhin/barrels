@@ -22,6 +22,11 @@ module.exports = {
     seller: {
       model: 'sellers',
       required: true
+    },
+    regions: {
+      collection: 'region',
+      via: 'product',
+      required: true
     }
   }
 };

@@ -133,7 +133,11 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
         // Save model's association information
         that.associations[modelName] = {};
         for (var i = 0; i < Model.associations.length; i++) {
-          that.associations[modelName][Model.associations[i].alias] = Model.associations[i];
+          var alias = Model.associations[i].alias;
+          var required = Model._validator.validations[alias].required;
+
+          that.associations[modelName][alias] = Model.associations[i];
+          that.associations[modelName][alias].required = required ? true : false;
         }
 
         // Insert all the fixture items
@@ -143,9 +147,30 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
           // Item position in the file
           var itemIndex = fixtureObjects.indexOf(item);
 
-          // Strip associations data
           if (autoAssociations) {
-            item = _.omit(item, Object.keys(that.associations[modelName]));
+            for (var modelAlias in that.associations[modelName]) {
+              var required = that.associations[modelName][modelAlias].required;
+
+              if ( required ) {
+                // Map required associations to model primary keys
+                // have to treat multiple and single relations differently
+                var collectionName = that.associations[modelName][modelAlias].collection;
+                var associatedModelName = that.associations[modelName][modelAlias].model;
+
+                if (collectionName) {
+                  for (var i = 0; i < item[modelAlias].length; i++) {
+                    var idIndex = item[modelAlias][i] - 1;
+                    item[modelAlias][i] = that.idMap[collectionName][idIndex];
+                  }
+                } else if (associatedModelName) {
+                  var idIndex = item[modelAlias] - 1;
+                  item[modelAlias] = that.idMap[associatedModelName][idIndex]
+                }
+              } else {
+                // Strip associations data and associate later
+                item = _.omit(item, modelAlias);
+              }
+            }
           }
 
           // Insert
