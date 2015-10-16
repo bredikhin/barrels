@@ -6,7 +6,9 @@
       1,
       2,
       3
-    ]
+    ],
+    "seller": 1,
+    "regions": [1,2,3]
   },
   {
     "title": "Driving Shoes",
@@ -14,7 +16,9 @@
     "tags": [
       2,
       3
-    ]
+    ],
+    "seller": 1,
+    "regions": [1,2,3]
   },
   {
     "title": "Aviator Sunglasses",
@@ -22,6 +26,8 @@
     "tags": [
       3,
       4
-    ]
+    ],
+    "seller": 1,
+    "regions": [1,2,3]
   }
 ]

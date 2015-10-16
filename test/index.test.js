@@ -29,9 +29,6 @@ describe('Barrels', function() {
   describe('populate()', function() {
     before(function(done) {
       Sails.lift({
-        log: {
-          level: 'error'
-        },
         paths: {
           models: require('path').join(process.cwd(),
             'test/fixtures/models')
@@ -59,7 +56,20 @@ describe('Barrels', function() {
 
     describe('populate(cb)', function() {
       before(function(done) {
-        barrels.populate(done);
+
+          barrels.populate(["sellers", "region"], function() {
+
+              barrels.populate(["categories", "products", "tags"], function () {
+
+                  Products.find()
+                  done();
+
+
+              });
+
+
+          });
+
       });
 
       it('should populate the DB with products and categories', function(done) {
@@ -110,6 +120,19 @@ describe('Barrels', function() {
           }, done);
         });
       });
+
+      it.only('should assign at least three regions to each product', function(done) {
+        Products.find().populate('regions').exec(function(err, products) {
+          if (err)
+            return done(err);
+
+          async.each(products, function(product, nextProduct) {
+            should(product.regions.length).be.greaterThan(2);
+
+            nextProduct();
+          }, done);
+        })
+      })
     });
 
     describe('populate(cb, false)', function() {
