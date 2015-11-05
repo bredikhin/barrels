@@ -1,6 +1,5 @@
 /**
  * Products
- *
  */
 
 module.exports = {
@@ -24,8 +23,8 @@ module.exports = {
       required: true
     },
     regions: {
-      collection: 'region',
-      via: 'product',
+      collection: 'regions',
+      via: 'products',
       required: true
     }
   }

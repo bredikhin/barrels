@@ -8,7 +8,10 @@
       3
     ],
     "seller": 1,
-    "regions": [1,2,3]
+    "regions": [
+      1,
+      2
+    ]
   },
   {
     "title": "Driving Shoes",
@@ -18,7 +21,10 @@
       3
     ],
     "seller": 1,
-    "regions": [1,2,3]
+    "regions": [
+      2,
+      3
+    ]
   },
   {
     "title": "Aviator Sunglasses",
@@ -28,6 +34,10 @@
       4
     ],
     "seller": 1,
-    "regions": [1,2,3]
+    "regions": [
+      1,
+      2,
+      3
+    ]
   }
 ]

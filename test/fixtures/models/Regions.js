@@ -4,14 +4,12 @@
 
 module.exports = {
   attributes: {
-    product: {
+    products: {
       collection: 'products',
       via: 'regions'
     },
-
     name: {
         type: 'string'
     }
   }
-
 };
