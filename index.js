@@ -145,27 +145,28 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
           // Item position in the file
           var itemIndex = fixtureObjects.indexOf(item);
 
-          if (autoAssociations) {
-            for (var alias in that.associations[modelName]) {
-              if (that.associations[modelName][alias].required) {
-                // Map required associations to model primary keys
-                // have to treat multiple and single relations differently
-                var collectionName = that.associations[modelName][alias].collection;
-                var associatedModelName = that.associations[modelName][alias].model;
+          for (var alias in that.associations[modelName]) {
+            if (that.associations[modelName][alias].required) {
+              // With required associations present, the associated fixtures
+              // must be already loaded, so we can map the ids
+              var collectionName = that.associations[modelName][alias].collection; // many-to-many
+              var associatedModelName = that.associations[modelName][alias].model; // one-to-many
 
-                if (collectionName) {
-                  for (var i = 0; i < item[alias].length; i++) {
-                    var idIndex = item[alias][i] - 1;
-                    item[alias][i] = that.idMap[collectionName][idIndex];
-                  }
-                } else if (associatedModelName) {
-                  var idIndex = item[alias] - 1;
-                  item[alias] = that.idMap[associatedModelName][idIndex];
+              if ((_.isArray(item[alias]))&&(collectionName)) {
+                if (!that.idMap[collectionName])
+                  nextItem(new Error('Please provide a loading order acceptable for required associations'));
+                for (var i = 0; i < item[alias].length; i++) {
+                  item[alias][i] = that.idMap[collectionName][item[alias][i] - 1];
                 }
-              } else {
-                // Strip associations data and associate later
-                item = _.omit(item, alias);
+              } else if (associatedModelName) {
+                if (!that.idMap[associatedModelName])
+                  nextItem(new Error('Please provide a loading order acceptable for required associations'));
+                item[alias] = that.idMap[associatedModelName][item[alias] - 1];
               }
+            } else if (autoAssociations) {
+              // The order is not important, so we can strip
+              // associations data and associate later
+              item = _.omit(item, alias);
             }
           }
 
