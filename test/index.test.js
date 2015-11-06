@@ -220,5 +220,13 @@ describe('Barrels', function() {
         done();
       });
     });
+
+    it('should ask for specific order while populating models with required associations', function(done) {
+      barrels.populate(['products'], function(err) {
+        should(err.message).be.eql('Please provide a loading order acceptable for required associations');
+
+        done();
+      });
+    });
   });
 });
