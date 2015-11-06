@@ -1,4 +1,4 @@
-# Simple DB Fixtures for Sails.js (^0.10.x) with Associations Support
+# Simple DB Fixtures for Sails.js with Associations Support
 
 [![Build Status](https://travis-ci.org/bredikhin/barrels.png?branch=master)](https://travis-ci.org/bredikhin/barrels)
 [![Dependency Status](https://gemnasium.com/bredikhin/barrels.png)](https://gemnasium.com/bredikhin/barrels)
@@ -44,15 +44,16 @@ the first (optional) argument, for example:
 Use the number of position (starting from one) of an entry in the JSON fixture
 as a reference to associate models (see
 https://github.com/bredikhin/barrels/blob/master/test/fixtures/products.json
-for example). This feature can be disabled by passing `false` as second parameter to `populate`.
+for example). This feature can be disabled by passing `false` as the last
+parameter to `populate`.
 
 ## Required associations
 
-If you have any associations described as `required: true`, automatic
-association won't work out of the box. In this case you have to load your
-fixtures gradually by passing an array of collection names as the first
-parameter (available since v1.3.0). This way you can populate your required
-associations first, and then take care of all other fixtures.
+If you have any associations described as `required: true`, they will be
+added automatically, no matter if the last parameter to `populate` is `false`
+or not. However, you have to load your fixtures gradually (by passing an array
+of collection names as the first parameter) in such an order that collections
+corresponding to the required associations get populated first.
 
 Let's say, for example, you are implementing a `Passport.js`-based
 authentication, and every `Passport` has `User` as a required association. You'd
