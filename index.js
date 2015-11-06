@@ -76,6 +76,9 @@ Barrels.prototype.associate = function(collections, done) {
           item = _.pick(item, Object.keys(that.associations[modelName]));
           async.each(Object.keys(item), function(attr, nextAttr) {
             var association = that.associations[modelName][attr];
+            // Required associations should have beed added earlier
+            if (association.required)
+              return nextAttr();
             var joined = association[association.type];
 
             if (!_.isArray(item[attr]))
