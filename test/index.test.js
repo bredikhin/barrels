@@ -13,15 +13,19 @@ describe('Barrels', function() {
 
   // Load fixtures into memory
   describe('constructor', function() {
-    it('should load all the json files from default folder', function() {
+    it('should load all the json files from default folder', function(done) {
       Object.keys(fixtures).length.should.be.greaterThan(1,
         'At least two fixture files should be loaded!');
+
+      done();
     });
 
-    it('should set generate lowercase property names for models', function() {
+    it('should set generate lowercase property names for models', function(done) {
       var oneWord = Object.keys(fixtures).join();
       oneWord.toLowerCase().should.be.eql(oneWord,
         'Property names should be in lowercase!');
+
+      done();
     });
   });
 
@@ -56,20 +60,17 @@ describe('Barrels', function() {
 
     describe('populate(cb)', function() {
       before(function(done) {
+        barrels.populate(['sellers', 'regions'], function(err) {
+          if (err)
+            return done(err);
 
-          barrels.populate(["sellers", "region"], function() {
+          barrels.populate(['categories', 'products', 'tags'], function (err) {
+            if (err)
+              return done(err);
 
-              barrels.populate(["categories", "products", "tags"], function () {
-
-                  Products.find()
-                  done();
-
-
-              });
-
-
+            done();
           });
-
+        });
       });
 
       it('should populate the DB with products and categories', function(done) {
@@ -77,19 +78,16 @@ describe('Barrels', function() {
           if (err)
             return done(err);
 
-          var gotCategories = (fixtures['categories'].length >
-            0);
-          var categoriesAreInTheDb = (categories.length ===
-            fixtures['categories'].length);
+          var gotCategories = (fixtures['categories'].length > 0);
+          var categoriesAreInTheDb = (categories.length === fixtures['categories'].length);
           should(gotCategories && categoriesAreInTheDb).be.ok;
 
           Products.find().exec(function(err, products) {
             if (err)
               return done(err);
 
-            categories.length.should.be.eql(products.length,
-              'Categories and products should have equal amount of entries!'
-            );
+            categories.length.should.be.eql(products.length, 'Categories and products should have equal amount of entries!');
+
             done();
           });
         });
@@ -121,23 +119,33 @@ describe('Barrels', function() {
         });
       });
 
-      it.only('should assign at least three regions to each product', function(done) {
+      it('should assign at least two regions to each product', function(done) {
         Products.find().populate('regions').exec(function(err, products) {
           if (err)
             return done(err);
 
           async.each(products, function(product, nextProduct) {
-            should(product.regions.length).be.greaterThan(2);
+            should(product.regions.length).be.greaterThan(1);
 
             nextProduct();
           }, done);
-        })
-      })
+        });
+      });
     });
 
     describe('populate(cb, false)', function() {
       before(function(done) {
-        barrels.populate(done, false);
+        barrels.populate(['sellers', 'regions'], function(err) {
+          if (err)
+            return done(err);
+
+          barrels.populate(['categories', 'products', 'tags'], function (err) {
+            if (err)
+              return done(err);
+
+            done();
+          }, false);
+        }, false);
       });
 
       it('should keep the associations-related fields', function(done) {
@@ -153,6 +161,20 @@ describe('Barrels', function() {
           }, done);
         });
       });
+
+      it('should always populate required associations', function(done) {
+        Products.find().populate('regions').exec(function(err, products) {
+          if (err)
+            return done(err);
+
+          async.each(products, function(product, nextProduct) {
+            should(product.regions.length).be.greaterThan(1);
+
+            nextProduct();
+          }, done);
+        });
+      });
+
     });
 
     describe('populate(modelList, cb)', function() {
@@ -160,12 +182,22 @@ describe('Barrels', function() {
         Products.destroy().exec(function(err) {
           if (err)
             return done(err);
-            
+
           Categories.destroy().exec(function(err) {
             if (err)
               return done(err);
 
-            barrels.populate(['products', 'tags'], done);
+            barrels.populate(['sellers', 'regions'], function(err) {
+              if (err)
+		            return done(err);
+
+              barrels.populate(['products', 'tags'], function(err) {
+                if (err)
+                  return done(err);
+
+                done();
+              });
+            });
           });
         });
       });
