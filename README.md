@@ -78,4 +78,4 @@ barrels.populate(['user', 'passport'], function(err) {
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2013-2014 [Ruslan Bredikhin](http://ruslanbredikhin.com/)
+Copyright (c) 2013-2015 [Ruslan Bredikhin](http://ruslanbredikhin.com/)
