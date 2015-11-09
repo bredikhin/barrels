@@ -157,13 +157,13 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
 
               if ((_.isArray(item[alias]))&&(collectionName)) {
                 if (!that.idMap[collectionName])
-                  nextItem(new Error('Please provide a loading order acceptable for required associations'));
+                  return nextItem(new Error('Please provide a loading order acceptable for required associations'));
                 for (var i = 0; i < item[alias].length; i++) {
                   item[alias][i] = that.idMap[collectionName][item[alias][i] - 1];
                 }
               } else if (associatedModelName) {
                 if (!that.idMap[associatedModelName])
-                  nextItem(new Error('Please provide a loading order acceptable for required associations'));
+                  return nextItem(new Error('Please provide a loading order acceptable for required associations'));
                 item[alias] = that.idMap[associatedModelName][item[alias] - 1];
               }
             } else if (autoAssociations) {
