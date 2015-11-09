@@ -60,19 +60,13 @@ authentication, and every `Passport` has `User` as a required association. You'd
 write something like this:
 
 ```javascript
-barrels.populate(['user'], function(err) {
+barrels.populate(['user', 'passport'], function(err) {
   if (err)
     return done(err); // Higher level callback
 
-  // Users will already be populated here, so the required association should work
-  barrels.populate(['passport'], function(err) {
-    if (err)
-      return done(err); // Higher level callback
-
-      // Do your thing...
-      done();
-    });
-  });
+  // Do your thing...
+  done();
+});
 ```
 
 ## Dependencies
