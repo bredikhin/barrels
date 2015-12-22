@@ -16,7 +16,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha test/index.test.js -R spec",
-    "test:string": "mocha test/string.test.js -R spec"
+    "test:string": "mocha test/string.test.js -R spec",
+    "test:object": "mocha test/object.test.js -R spec"
   },
   "repository": {
     "type": "git",
