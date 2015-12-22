@@ -6,7 +6,9 @@
 var should = require('should');
 var Sails = require('sails');
 var Barrels = require('../');
-var barrels = new Barrels();
+var path = require('path');
+var fixtureFolder = path.join(process.cwd(), 'test/fixtures/int-id');
+var barrels = new Barrels(fixtureFolder);
 
 describe('Barrels', function() {
   var fixtures = barrels.data;
@@ -34,8 +36,7 @@ describe('Barrels', function() {
     before(function(done) {
       Sails.lift({
         paths: {
-          models: require('path').join(process.cwd(),
-            'test/fixtures/models')
+          models: path.join(fixtureFolder, 'models')
         },
         connections: {
           test: {
