@@ -170,6 +170,7 @@ Barrels.prototype.populate = function (collections, done, _options_) {
 				// Cleanup existing data in the table / collection
 				Model.destroy().exec(insertFixtures);
 			} else {
+				sails.log.warn('barrels:populate', 'Be sure that keeping records it\'s really that you want');
 				insertFixtures();
 			}
 		} else {
