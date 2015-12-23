@@ -13,6 +13,17 @@ var path = require('path');
 var async = require('async');
 var _ = require('lodash');
 
+/**
+ * Barrel.populate options
+ * @typedef {{autoAssociations: boolean, purgeExistsData: boolean}} Options for {@link Barrels.populate}
+ * @property {boolean} autoAssociations - Indicate that .populate should automatically associate based on the order in the fixture files
+ * @property {boolean} purgeExistsData - Indicate that .populate should removing any existing data from the collection corresponding to the fixture
+ */
+var DEFAULT_POPULATE_OPTIONS = {
+	autoAssociations: true,
+	purgeExistsData: true
+};
+
 module.exports = Barrels;
 
 /**
@@ -108,11 +119,11 @@ Barrels.prototype.associate = function(collections, done) {
  * Put loaded fixtures in the database, associations excluded
  * @param {array} collections optional list of collections to populate
  * @param {function} done callback
- * @param {boolean} autoAssociations automatically associate based on the order in the fixture files
+ * @param {DEFAULT_POPULATE_OPTIONS} _options_ - Options for populate fixtures
  */
-Barrels.prototype.populate = function(collections, done, autoAssociations) {
+Barrels.prototype.populate = function(collections, done, _options_) {
   if (!_.isArray(collections)) {
-    autoAssociations = done;
+    _options_ = done;
     done = collections;
     collections = this.modelNames;
   }
@@ -121,79 +132,90 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
       collection = collection.toLowerCase();
     });
   }
-  autoAssociations = !(autoAssociations === false);
+
+	// backward capability
+	var options = _.isObject(options) ?
+		_.extend({}, DEFAULT_POPULATE_OPTIONS, _options_)
+		: _.extend({}, DEFAULT_POPULATE_OPTIONS, {autoAssociations: !(_options_ === false)});
+
   var that = this;
 
   // Populate each table / collection
   async.each(collections, function(modelName, nextModel) {
     var Model = sails.models[modelName];
     if (Model) {
-      // Cleanup existing data in the table / collection
-      Model.destroy().exec(function(err) {
-        if (err)
-          return nextModel(err);
-
-        // Save model's association information
-        that.associations[modelName] = {};
-        for (var i = 0; i < Model.associations.length; i++) {
-          var alias = Model.associations[i].alias;
-          that.associations[modelName][alias] = Model.associations[i];
-          that.associations[modelName][alias].required = !!(Model._validator.validations[alias].required);
-        }
-
-        // Insert all the fixture items
-        that.idMap[modelName] = [];
-        var fixtureObjects = _.cloneDeep(that.data[modelName]);
-        async.each(fixtureObjects, function(item, nextItem) {
-          // Item position in the file
-          var itemIndex = fixtureObjects.indexOf(item);
-
-          for (var alias in that.associations[modelName]) {
-            if (that.associations[modelName][alias].required) {
-              // With required associations present, the associated fixtures
-              // must be already loaded, so we can map the ids
-              var collectionName = that.associations[modelName][alias].collection; // many-to-many
-              var associatedModelName = that.associations[modelName][alias].model; // one-to-many
-
-              if ((_.isArray(item[alias]))&&(collectionName)) {
-                if (!that.idMap[collectionName])
-                  return nextItem(new Error('Please provide a loading order acceptable for required associations'));
-                for (var i = 0; i < item[alias].length; i++) {
-                  item[alias][i] = that.idMap[collectionName][item[alias][i] - 1];
-                }
-              } else if (associatedModelName) {
-                if (!that.idMap[associatedModelName])
-                  return nextItem(new Error('Please provide a loading order acceptable for required associations'));
-                item[alias] = that.idMap[associatedModelName][item[alias] - 1];
-              }
-            } else if (autoAssociations) {
-              // The order is not important, so we can strip
-              // associations data and associate later
-              item = _.omit(item, alias);
-            }
-          }
-
-          // Insert
-          Model.create(item).exec(function(err, model) {
-            if (err)
-              return nextItem(err);
-
-            // Primary key mapping
-            that.idMap[modelName][itemIndex] = model[Model.primaryKey];
-
-            nextItem();
-          });
-        }, nextModel);
-      });
+	    if(options.purgeExistsData){
+        // Cleanup existing data in the table / collection
+        Model.destroy().exec(insertFixtures);
+	    }else{
+		    insertFixtures();
+	    }
     } else {
       nextModel();
     }
+
+	  function insertFixtures(err) {
+		  if (err)
+			  return nextModel(err);
+
+		  // Save model's association information
+		  that.associations[modelName] = {};
+		  for (var i = 0; i < Model.associations.length; i++) {
+			  var alias = Model.associations[i].alias;
+			  that.associations[modelName][alias] = Model.associations[i];
+			  that.associations[modelName][alias].required = !!(Model._validator.validations[alias].required);
+		  }
+
+		  // Insert all the fixture items
+		  that.idMap[modelName] = [];
+		  var fixtureObjects = _.cloneDeep(that.data[modelName]);
+		  async.each(fixtureObjects, function(item, nextItem) {
+			  // Item position in the file
+			  var itemIndex = fixtureObjects.indexOf(item);
+
+			  for (var alias in that.associations[modelName]) {
+				  if (that.associations[modelName][alias].required) {
+					  // With required associations present, the associated fixtures
+					  // must be already loaded, so we can map the ids
+					  var collectionName = that.associations[modelName][alias].collection; // many-to-many
+					  var associatedModelName = that.associations[modelName][alias].model; // one-to-many
+
+					  if ((_.isArray(item[alias]))&&(collectionName)) {
+						  if (!that.idMap[collectionName])
+							  return nextItem(new Error('Please provide a loading order acceptable for required associations'));
+						  for (var i = 0; i < item[alias].length; i++) {
+							  item[alias][i] = that.idMap[collectionName][item[alias][i] - 1];
+						  }
+					  } else if (associatedModelName) {
+						  if (!that.idMap[associatedModelName])
+							  return nextItem(new Error('Please provide a loading order acceptable for required associations'));
+						  item[alias] = that.idMap[associatedModelName][item[alias] - 1];
+					  }
+				  } else if (options.autoAssociations) {
+					  // The order is not important, so we can strip
+					  // associations data and associate later
+					  item = _.omit(item, alias);
+				  }
+			  }
+
+			  // Insert
+			  Model.create(item).exec(function(err, model) {
+				  if (err)
+					  return nextItem(err);
+
+				  // Primary key mapping
+				  that.idMap[modelName][itemIndex] = model[Model.primaryKey];
+
+				  nextItem();
+			  });
+		  }, nextModel);
+	  }
   }, function(err) {
     if (err)
       return done(err);
 
     // Create associations if requested
-    if (autoAssociations)
+    if (options.autoAssociations)
       return that.associate(collections, done);
 
     done();
