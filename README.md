@@ -26,9 +26,10 @@ Pass to the constructor the path to the folder containing your fixtures
 
 `Populate`'ing the test database involves three steps:
 
-* Removing any existing data from the collection corresponding to the fixture
+* Removing any existing data from the collection corresponding to the fixture (can be disabled
+  by passing `{purgeExistsData: false}` as the last parameter to `populate`)
 * Loading the fixture data into the test database
-* Automatically applying associations (can be disabled by passing `false` as
+* Automatically applying associations (can be disabled by passing `{autoAssociations: false}` as
   the last parameter to `populate`)
 
 `Populate` also accepts an array of names of collections to populate as
