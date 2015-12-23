@@ -177,6 +177,85 @@ describe('Barrels', function() {
 
     });
 
+	  //same as above
+    describe('populate(cb, {autoAssociations: false})', function() {
+      before(function(done) {
+        barrels.populate(['sellers', 'regions'], function(err) {
+          if (err)
+            return done(err);
+
+          barrels.populate(['categories', 'products', 'tags'], function (err) {
+            if (err)
+              return done(err);
+
+            done();
+          }, {autoAssociations: false});
+        }, {autoAssociations: false});
+      });
+
+      it('should keep the associations-related fields', function(done) {
+        Products.find().exec(function(err, products) {
+          if (err)
+            return done(err);
+
+          async.each(products, function(product, nextProduct) {
+            product.category.should.be.a.Number;
+            product.tags.should.be.an.Array;
+
+            nextProduct();
+          }, done);
+        });
+      });
+
+      it('should always populate required associations', function(done) {
+        Products.find().populate('regions').exec(function(err, products) {
+          if (err)
+            return done(err);
+
+          async.each(products, function(product, nextProduct) {
+            should(product.regions.length).be.greaterThan(1);
+
+            nextProduct();
+          }, done);
+        });
+      });
+
+    });
+
+
+    describe('populate(cb, {purgeExistsData: false})', function() {
+	    var initialAmount;
+
+      before(function(done) {
+	      initialAmount = barrels.data.sellers.length;
+
+	      barrels.populate(['sellers'], function (err) {
+		      if (err)
+			      return done(err);
+
+		      barrels.populate(['sellers'], function (err) {
+			      if (err)
+				      return done(err);
+
+			      done();
+		      }, {purgeExistsData: false});
+	      });
+      });
+
+	    it('should not try to purge exists records', function(done){
+		    Sellers.count().exec(function(err, amount){
+			    if(err){
+				    done(err);
+			    }
+			    amount.should.be.greaterThan(initialAmount);
+			    done();
+		    })
+
+	    });
+
+
+    });
+
     describe('populate(modelList, cb)', function() {
       before(function(done) {
         Products.destroy().exec(function(err) {
