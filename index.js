@@ -133,10 +133,15 @@ Barrels.prototype.populate = function (collections, done, _options_) {
 		});
 	}
 
+	var options = _.extend({}, DEFAULT_POPULATE_OPTIONS);
+
 	// backward capability
-	var options = _.isObject(options) ?
-		_.extend({}, DEFAULT_POPULATE_OPTIONS, _options_)
-		: _.extend({}, DEFAULT_POPULATE_OPTIONS, {autoAssociations: !(_options_ === false)});
+	if(_.isObject(_options_)){
+		_.extend(options, _options_);
+	}
+	else{
+		_.extend(options, {autoAssociations: !(_options_ === false)});
+	}
 
 	var that = this;
 
