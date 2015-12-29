@@ -125,7 +125,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
   var that = this;
 
   // Populate each table / collection
-  async.each(collections, function(modelName, nextModel) {
+  async.eachSeries(collections, function(modelName, nextModel) {
     var Model = sails.models[modelName];
     if (Model) {
       // Cleanup existing data in the table / collection
