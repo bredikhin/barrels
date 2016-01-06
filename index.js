@@ -111,10 +111,12 @@ Barrels.prototype.associate = function(collections, done) {
  * @param {boolean} autoAssociations automatically associate based on the order in the fixture files
  */
 Barrels.prototype.populate = function(collections, done, autoAssociations) {
+  var preserveLoadOrder = true;
   if (!_.isArray(collections)) {
     autoAssociations = done;
     done = collections;
     collections = this.modelNames;
+    preserveLoadOrder = false;
   }
   else {
     _.each(collections, function(collection) {
@@ -125,7 +127,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
   var that = this;
 
   // Populate each table / collection
-  async.eachSeries(collections, function(modelName, nextModel) {
+  async[preserveLoadOrder ? 'eachSeries' : 'each'](collections, function(modelName, nextModel) {
     var Model = sails.models[modelName];
     if (Model) {
       // Cleanup existing data in the table / collection
