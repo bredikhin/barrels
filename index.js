@@ -145,7 +145,7 @@ Barrels.prototype.populate = function (collections, done, _options_) {
 
 	var that = this;
 
-	async.each(collections, _populate,
+	async.eachSeries(collections, _populate,
 		function (err) {
 			if (err)
 				return done(err);
