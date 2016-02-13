@@ -62,7 +62,7 @@ function Barrels(sourceFolder) {
  * Add associations
  * @param {function} done callback
  */
-Barrels.prototype.associate = function (collections, done) {
+Barrels.prototype.associate = function(collections, done) {
   if (!_.isArray(collections)) {
     done = collections;
     collections = this.modelNames;
@@ -70,22 +70,22 @@ Barrels.prototype.associate = function (collections, done) {
   var that = this;
 
   // Add associations whenever needed
-  async.each(collections, function (modelName, nextModel) {
+  async.each(collections, function(modelName, nextModel) {
     var Model = sails.models[modelName];
     if (Model) {
       var fixtureObjects = _.cloneDeep(that.data[modelName]);
-      async.each(fixtureObjects, function (item, nextItem) {
+      async.each(fixtureObjects, function(item, nextItem) {
         // Item position in the file
         var itemIndex = fixtureObjects.indexOf(item);
 
         // Find and associate
-        Model.findOne(that.idMap[modelName][itemIndex]).exec(function (err, model) {
+        Model.findOne(that.idMap[modelName][itemIndex]).exec(function(err, model) {
           if (err)
             return nextItem(err);
 
           // Pick associations only
           item = _.pick(item, Object.keys(that.associations[modelName]));
-          async.each(Object.keys(item), function (attr, nextAttr) {
+          async.each(Object.keys(item), function(attr, nextAttr) {
             var association = that.associations[modelName][attr];
             // Required associations should have beed added earlier
             if (association.required)
@@ -100,7 +100,7 @@ Barrels.prototype.associate = function (collections, done) {
               }
             }
 
-            model.save(function (err) {
+            model.save(function(err) {
               if (err)
                 return nextAttr(err);
 
@@ -121,14 +121,14 @@ Barrels.prototype.associate = function (collections, done) {
  * @param {function} done callback
  * @param {DEFAULT_POPULATE_OPTIONS} _options_ - Options for populate fixtures
  */
-Barrels.prototype.populate = function (collections, done, _options_) {
+Barrels.prototype.populate = function(collections, done, _options_) {
   if (!_.isArray(collections)) {
     _options_ = done;
     done = collections;
     collections = this.modelNames;
   }
   else {
-    _.each(collections, function (collection) {
+    _.each(collections, function(collection) {
       collection = collection.toLowerCase();
     });
   }
@@ -146,7 +146,7 @@ Barrels.prototype.populate = function (collections, done, _options_) {
   var that = this;
 
   async.eachSeries(collections, _populate,
-    function (err) {
+    function(err) {
       if (err)
         return done(err);
 
@@ -192,7 +192,7 @@ Barrels.prototype.populate = function (collections, done, _options_) {
       // Insert all the fixture items
       that.idMap[modelName] = [];
       var fixtureObjects = _.cloneDeep(that.data[modelName]);
-      async.each(fixtureObjects, function (item, nextItem) {
+      async.each(fixtureObjects, function(item, nextItem) {
         // Item position in the file
         var itemIndex = fixtureObjects.indexOf(item);
 
@@ -222,7 +222,7 @@ Barrels.prototype.populate = function (collections, done, _options_) {
         }
 
         // Insert
-        Model.create(item).exec(function (err, model) {
+        Model.create(item).exec(function(err, model) {
           if (err)
             return nextItem(err);
 
