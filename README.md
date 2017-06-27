@@ -3,6 +3,9 @@
 [![Build Status](https://travis-ci.org/bredikhin/barrels.png?branch=master)](https://travis-ci.org/bredikhin/barrels)
 [![Dependency Status](https://gemnasium.com/bredikhin/barrels.png)](https://gemnasium.com/bredikhin/barrels)
 
+## Project Status
+
+This project is currently UNMAINTAINED since the topic is out of my current interests. Please contact me if you have time, desire and qualifications to take over.
 
 ## Installation
 
