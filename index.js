@@ -71,6 +71,9 @@ Barrels.prototype.associate = function(collections, done) {
         Model.findOne(that.idMap[modelName][itemIndex]).exec(function(err, model) {
           if (err)
             return nextItem(err);
+          
+          if(!model)
+            return nextItem();
 
           // Pick associations only
           item = _.pick(item, Object.keys(that.associations[modelName]));
@@ -83,14 +86,12 @@ Barrels.prototype.associate = function(collections, done) {
 
             if (!_.isArray(item[attr])) {
               var idx = that.idMap[joined].indexOf(item[attr]);
-              if(model)
-                model[attr] = that.idMap[joined][idx];
+              model[attr] = that.idMap[joined][idx];
             }
             else {
               for (var j = 0; j < item[attr].length; j++) {
               var idx = that.idMap[joined].indexOf(item[attr][j]);
-              if(model)
-                model[attr].add(that.idMap[joined][idx]);
+              model[attr].add(that.idMap[joined][idx]);
               }
             }
 
