@@ -119,8 +119,8 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
     preserveLoadOrder = false;
   }
   else {
-    _.each(collections, function(collection) {
-      collection = collection.toLowerCase();
+    collections = _.map(collections, function(collection) {
+      return collection.toLowerCase();
     });
   }
   autoAssociations = !(autoAssociations === false);
