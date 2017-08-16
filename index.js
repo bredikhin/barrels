@@ -83,11 +83,13 @@ Barrels.prototype.associate = function(collections, done) {
 
             if (!_.isArray(item[attr])) {
               var idx = that.idMap[joined].indexOf(item[attr]);
-              model[attr] = that.idMap[joined][idx];
+              if(model)
+                model[attr] = that.idMap[joined][idx];
             }
             else {
               for (var j = 0; j < item[attr].length; j++) {
               var idx = that.idMap[joined].indexOf(item[attr][j]);
+              if(model)
                 model[attr].add(that.idMap[joined][idx]);
               }
             }
