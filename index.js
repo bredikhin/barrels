@@ -81,11 +81,14 @@ Barrels.prototype.associate = function(collections, done) {
               return nextAttr();
             var joined = association[association.type];
 
-            if (!_.isArray(item[attr]))
-              model[attr] = that.idMap[joined][item[attr]-1];
+            if (!_.isArray(item[attr])) {
+              var idx = that.idMap[joined].indexOf(item[attr]);
+              model[attr] = that.idMap[joined][idx];
+            }
             else {
               for (var j = 0; j < item[attr].length; j++) {
-                model[attr].add(that.idMap[joined][item[attr][j]-1]);
+              var idx = that.idMap[joined].indexOf(item[attr][j]);
+                model[attr].add(that.idMap[joined][idx]);
               }
             }
 
