@@ -90,8 +90,8 @@ Barrels.prototype.associate = function(collections, done) {
             }
             else {
               for (var j = 0; j < item[attr].length; j++) {
-              var idx = that.idMap[joined].indexOf(item[attr][j]);
-              model[attr].add(that.idMap[joined][idx]);
+                var idx = that.idMap[joined].indexOf(item[attr][j]);
+                model[attr].add(that.idMap[joined][idx]);
               }
             }
 
