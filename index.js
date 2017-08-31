@@ -85,13 +85,13 @@ Barrels.prototype.associate = function(collections, done) {
             var joined = association[association.type];
 
             if (!_.isArray(item[attr])) {
-              var idx = that.idMap[joined] && Array.isArray(that.idMap[joined]) && that.idMap[joined].indexOf(item[attr]) || false;
+              var idx = (that.idMap[joined] && Array.isArray(that.idMap[joined]) && that.idMap[joined].indexOf(item[attr]) !== -1 ) ? that.idMap[joined].indexOf(item[attr]) : false;
               if (idx !== false)
                 model[attr] = that.idMap[joined][idx];
             }
             else {
               for (var j = 0; j < item[attr].length; j++) {
-              var idx = that.idMap[joined] && Array.isArray(that.idMap[joined]) && that.idMap[joined].indexOf(item[attr][j]) || false;
+              var idx = (that.idMap[joined] && Array.isArray(that.idMap[joined]) && that.idMap[joined].indexOf(item[attr][j]) !== -1) ? that.idMap[joined].indexOf(item[attr][j]) : false;
               if (idx !== false)
                 model[attr].add(that.idMap[joined][idx]);
               }
@@ -169,7 +169,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
                 if (!that.idMap[collectionName])
                   return nextItem(new Error('Please provide a loading order acceptable for required associations'));
                 for (var i = 0; i < item[alias].length; i++) {
-                  var idx = that.idMap[collectionName] && Array.isArray(that.idMap[collectionName]) && that.idMap[collectionName].indexOf(item[alias]) || false;
+                  var idx = (that.idMap[collectionName] && Array.isArray(that.idMap[collectionName]) && that.idMap[collectionName].indexOf(item[alias]) !== -1) ? that.idMap[collectionName].indexOf(item[alias]) : false;
                   if (idx !== false)
                     item[alias][i] = that.idMap[collectionName][idx];
                 }
@@ -177,7 +177,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
                 if (!that.idMap[associatedModelName])
                   return nextItem(new Error('Please provide a loading order acceptable for required associations'));
 
-                var idx = that.idMap[associatedModelName] && Array.isArray(that.idMap[associatedModelName]) && that.idMap[associatedModelName].indexOf(item[alias]) || false;
+                var idx = (that.idMap[associatedModelName] && Array.isArray(that.idMap[associatedModelName]) && that.idMap[associatedModelName].indexOf(item[alias]) !== -1) ? that.idMap[associatedModelName].indexOf(item[alias]) : false;
                 if (idx !== false)
                   item[alias] = that.idMap[associatedModelName][idx];
               }
