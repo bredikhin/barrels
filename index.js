@@ -219,11 +219,11 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
 
 
 function getId(collection, id) {
-    if(!(collection && Array.isArray(collection)))
+    if (!(collection && Array.isArray(collection)))
             return false;
-    if(Number.isInteger(id))
+    if (Number.isInteger(id))
       return collection[id - 1];
 
-    if(collection.indexOf(id) !== -1 )
+    if (collection.indexOf(id) !== -1 )
         return collection[collection.indexOf(id)]
 }
