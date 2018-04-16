@@ -154,7 +154,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
                 // Insert all the fixture items
                 that.idMap[modelName] = [];
                 var fixtureObjects = _.cloneDeep(that.data[modelName]);
-                async.each(fixtureObjects, function(item, nextItem) {
+                async.eachSeries(fixtureObjects, function(item, nextItem) {
                     // Item position in the file
                     var itemIndex = fixtureObjects.indexOf(item);
 
