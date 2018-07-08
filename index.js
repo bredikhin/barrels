@@ -131,7 +131,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
     var Model = sails.models[modelName];
     if (Model) {
       // Cleanup existing data in the table / collection
-      Model.destroy().exec(function(err) {
+      Model.destroy({}).exec(function(err) {
         if (err)
           return nextModel(err);
 
@@ -176,7 +176,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
           }
 
           // Insert
-          Model.create(item).exec(function(err, model) {
+            Model.create(item).fetch().exec(function(err, model) {
             if (err)
               return nextItem(err);
 
