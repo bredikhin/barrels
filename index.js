@@ -69,27 +69,28 @@ Barrels.prototype.associate = function(collections, done) {
 
         // Find and associate
         Model.findOne(that.idMap[modelName][itemIndex]).exec(function(err, model) {
+
           if (err)
             return nextItem(err);
 
           // Pick associations only
           item = _.pick(item, Object.keys(that.associations[modelName]));
-          async.each(Object.keys(item), function(attr, nextAttr) {
+          async.eachSeries(Object.keys(item), function(attr, nextAttr) {
             var association = that.associations[modelName][attr];
             // Required associations should have beed added earlier
             if (association.required)
               return nextAttr();
             var joined = association[association.type];
 
-            if (!_.isArray(item[attr]))
-              model[attr] = that.idMap[joined][item[attr]-1];
-            else {
+            if (!_.isArray(item[attr])) {
+              model[attr] = item[attr];
+            } else {
               for (var j = 0; j < item[attr].length; j++) {
                 model[attr].add(that.idMap[joined][item[attr][j]-1]);
               }
             }
-
-            model.save(function(err) {
+            Model.findOrCreate(that.idMap[modelName][itemIndex], model).exec(function(err, model) {
+            // model.save(function(err) {
               if (err)
                 return nextAttr(err);
 
@@ -137,11 +138,15 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
 
         // Save model's association information
         that.associations[modelName] = {};
+
         for (var i = 0; i < Model.associations.length; i++) {
           var alias = Model.associations[i].alias;
           that.associations[modelName][alias] = Model.associations[i];
-          that.associations[modelName][alias].required = !!(Model._validator.validations[alias].required);
+          if(Model._transformer._transformations[alias]) {
+            that.associations[modelName][alias].required = !!(Model._transformer._transformations[alias].required)
+          }
         }
+
 
         // Insert all the fixture items
         that.idMap[modelName] = [];
@@ -152,10 +157,12 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
 
           for (var alias in that.associations[modelName]) {
             if (that.associations[modelName][alias].required) {
+
               // With required associations present, the associated fixtures
               // must be already loaded, so we can map the ids
               var collectionName = that.associations[modelName][alias].collection; // many-to-many
               var associatedModelName = that.associations[modelName][alias].model; // one-to-many
+
 
               if ((_.isArray(item[alias]))&&(collectionName)) {
                 if (!that.idMap[collectionName])
@@ -171,7 +178,9 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
             } else if (autoAssociations) {
               // The order is not important, so we can strip
               // associations data and associate later
-              item = _.omit(item, alias);
+
+              // commented this to send alias for required fields
+              // item = _.omit(item, alias);
             }
           }
 
