@@ -5,7 +5,9 @@
 
 ## Project Status
 
-This project is currently UNMAINTAINED since the topic is out of my current interests. Please contact me if you have time, desire and qualifications to take over.
+This project is currently UNMAINTAINED since the topic is out of my current interests. 
+
+**A newer, Sails v1 compatible version is available via the [`Fixted`](https://www.npmjs.com/package/fixted) package by NeoNexus.**
 
 ## Installation
 
