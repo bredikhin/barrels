@@ -4,7 +4,7 @@
   "description": "Simple DB Fixtures for Sails.js with associations support",
   "dependencies": {
     "async": "^1.5.0",
-    "lodash": "^3.10.1"
+    "lodash": "^4.17.19"
   },
   "devDependencies": {
     "mocha": "^2.3.4",
