@@ -17,7 +17,7 @@ module.exports = Barrels;
 
 /**
  * Barrels module
- * @param {string} sourceFolder defaults to <project root>/test/fixtures
+ * @param {string} [sourceFolder] defaults to <project root>/test/fixtures
  */
 function Barrels(sourceFolder) {
   if (!(this instanceof Barrels))
@@ -151,22 +151,35 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
           var itemIndex = fixtureObjects.indexOf(item);
 
           for (var alias in that.associations[modelName]) {
-            if (that.associations[modelName][alias].required) {
+            var association = that.associations[modelName][alias];
+            if (association.required)
+            {
               // With required associations present, the associated fixtures
               // must be already loaded, so we can map the ids
-              var collectionName = that.associations[modelName][alias].collection; // many-to-many
-              var associatedModelName = that.associations[modelName][alias].model; // one-to-many
+              var collectionName = association.collection; // many-to-many
+              var associatedModelName = association.model; // one-to-many
 
-              if ((_.isArray(item[alias]))&&(collectionName)) {
+              // NOTE that [item[alias] - 1] and [item[alias][i] - 1]
+              // only works for auto-increment integers (or string numbers)
+              // the purpose it to keep auto-incremented integers
+              // equal to the first created batch, so the database can be
+              // recreated without higher numbers being created
+              // (which would breaking associations).
+
+              if ((_.isArray(item[alias])) && (collectionName)) {
                 if (!that.idMap[collectionName])
                   return nextItem(new Error('Please provide a loading order acceptable for required associations'));
                 for (var i = 0; i < item[alias].length; i++) {
-                  item[alias][i] = that.idMap[collectionName][item[alias][i] - 1];
+                  if (_.isFinite(item[alias][i] - 1)) {
+                    item[alias][i] = that.idMap[collectionName][item[alias][i] - 1];
+                  }
                 }
               } else if (associatedModelName) {
                 if (!that.idMap[associatedModelName])
                   return nextItem(new Error('Please provide a loading order acceptable for required associations'));
-                item[alias] = that.idMap[associatedModelName][item[alias] - 1];
+                if (_.isFinite(item[alias - 1])) {
+                  item[alias] = that.idMap[associatedModelName][item[alias] - 1];
+                }
               }
             } else if (autoAssociations) {
               // The order is not important, so we can strip

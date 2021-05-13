@@ -1,0 +1,46 @@
+[
+  {
+    "customId": "56799fa7fdafa4f9402ebb17",
+    "title": "Leather Jacket",
+    "category": "507f1f77bcf86cd799439011",
+    "tags": [
+      "56799fa7fdafa4f9402ebb13",
+      "56799fa7fdafa4f9402ebb14",
+      "56799fa7fdafa4f9402ebb15"
+    ],
+    "seller": "56799fa7fdafa4f9402ebb12",
+    "regions": [
+      "56799fa7fdafa4f9402ebb09",
+      "56799fa7fdafa4f9402ebb10"
+    ]
+  },
+  {
+    "customId": "56799fa7fdafa4f9402ebb18",
+    "title": "Driving Shoes",
+    "category": "507f191e810c19729de860ea",
+    "tags": [
+      "56799fa7fdafa4f9402ebb14",
+      "56799fa7fdafa4f9402ebb15"
+    ],
+    "seller": "56799fa7fdafa4f9402ebb12",
+    "regions": [
+      "56799fa7fdafa4f9402ebb10",
+      "56799fa7fdafa4f9402ebb11"
+    ]
+  },
+  {
+    "customId": "56799fa7fdafa4f9402ebb19",
+    "title": "Aviator Sunglasses",
+    "category": "56799fa7fdafa4f9402ebb06",
+    "tags": [
+      "56799fa7fdafa4f9402ebb15",
+      "56799fa7fdafa4f9402ebb16"
+    ],
+    "seller": "56799fa7fdafa4f9402ebb12",
+    "regions": [
+      "56799fa7fdafa4f9402ebb09",
+      "56799fa7fdafa4f9402ebb10",
+      "56799fa7fdafa4f9402ebb11"
+    ]
+  }
+]
