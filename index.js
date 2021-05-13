@@ -33,7 +33,11 @@ function Barrels(sourceFolder) {
   this.associations = {};
 
   // Load the fixtures
-  sourceFolder = sourceFolder || process.cwd() + '/test/fixtures';
+  if (sourceFolder) {
+    sourceFolder = process.cwd() + '/' + sourceFolder;
+  } else {
+    sourceFolder = process.cwd() + '/test/fixtures';
+  }
   var files = fs.readdirSync(sourceFolder);
 
   for (var i = 0; i < files.length; i++) {
