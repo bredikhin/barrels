@@ -17,7 +17,7 @@ module.exports = Barrels;
 
 /**
  * Barrels module
- * @param {string} sourceFolder defaults to <project root>/test/fixtures
+ * @param {string} [sourceFolder] defaults to <project root>/test/fixtures
  */
 function Barrels(sourceFolder) {
   if (!(this instanceof Barrels))
