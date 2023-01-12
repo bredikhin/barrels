@@ -7,7 +7,7 @@
     "lodash": "^4.17.19"
   },
   "devDependencies": {
-    "mocha": "^2.3.4",
+    "mocha": "^10.2.0",
     "pre-commit": "1.1.2",
     "sails": "^1.2.4",
     "sails-memory": "^0.10.5",
